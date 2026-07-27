@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سبحة الذاكرين - الوضع الليلي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #262626; /* لون السبحة الأساسي (أسود/رصاصي غامق) */
+            --accent-color: #404040;  /* درجة أفتح للتدريج */
+            --bg-color: #000000;      /* لون خلفية الصفحة الأساسي (أسود) */
+            --card-bg: rgba(25, 25, 25, 0.85); /* كارت زجاجي غامق */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.4s ease;
+            color: var(--text-main);
+        }
+
+        /* لوحة التحكم في الألوان */
+        .color-settings {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            padding: 12px 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            z-index: 1000;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .picker-group { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .color-settings label { font-size: 0.8rem; font-weight: bold; color: var(--text-main); margin: 0; }
+        .color-settings input[type="color"] { cursor: pointer; border: none; width: 35px; height: 35px; border-radius: 50%; padding: 0; background: none; }
+
+        /* جسم السبحة */
+        .tasbih-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 40px 30px;
+            border-radius: 40px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5), 
+                        inset 0 1px 1px rgba(255,255,255,0.05);
+            text-align: center;
+            width: 340px;
+            position: relative;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        h1 { font-size: 1.5rem; color: var(--text-main); margin-top: 0; margin-bottom: 25px; font-weight: 800; }
+
+        /* القائمة المنسدلة */
+        select {
+            width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0, 0, 0, 0.5); font-family: 'Tajawal'; font-weight: bold; margin-bottom: 25px;
+            color: var(--text-main); font-size: 0.95rem; outline: none; transition: border 0.3s;
+        }
+        select:focus { border-color: var(--text-muted); }
+        select option { background: #1e293b; color: white; }
+
+        /* شاشة العداد */
+        .display-screen {
+            background: linear-gradient(145deg, #020617, #0f172a);
+            color: #22d3ee;
+            padding: 30px 20px;
+            border-radius: 20px;
+            margin-bottom: 35px;
+            box-shadow: inset 0 10px 20px rgba(0,0,0,0.8), 0 5px 15px rgba(0,0,0,0.2);
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.02);
+        }
+
+        .counter-val { font-size: 4.5rem; font-weight: 800; margin: 0; text-shadow: 0 0 15px rgba(34, 211, 238, 0.5); line-height: 1; }
+        .total-info { font-size: 0.85rem; color: var(--text-muted); margin-top: 15px; background: rgba(0,0,0,0.4); padding: 5px 12px; border-radius: 8px; display: inline-block; }
+
+        /* الزرار الرئيسي */
+        .main-button {
+            width: 140px; height: 140px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            border: 4px solid rgba(255,255,255,0.05);
+            cursor: pointer;
+            font-size: 1.5rem; font-weight: 800; color: #ffffff;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4), 
+                        inset 0 -5px 15px rgba(0,0,0,0.5),
+                        inset 0 5px 15px rgba(255,255,255,0.1);
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; justify-content: center; align-items: center; margin: 0 auto;
+        }
+        
+        .main-button:active { 
+            transform: scale(0.92) translateY(4px); 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3), 
+                        inset 0 8px 20px rgba(0,0,0,0.6); 
+        }
+
+        /* زر التصفير */
+        .reset-link { 
+            display: inline-block; margin-top: 25px; padding: 8px 20px; border-radius: 20px;
+            background: rgba(239, 68, 68, 0.1); color: #f87171; cursor: pointer; font-size: 0.9rem; font-weight: bold; 
+            transition: 0.3s; border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .reset-link:hover { background: rgba(239, 68, 68, 0.2); }
+
+        /* التحديات */
+        .side-challenges {
+            position: fixed; bottom: 30px; left: 30px; 
+            background: var(--card-bg); backdrop-filter: blur(15px); 
+            padding: 20px; border-radius: 20px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6); width: 250px; 
+            border-right: 6px solid var(--primary-color);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            border-left: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            z-index: 10;
+        }
+        .side-challenges h3 { font-size: 1rem; margin: 0 0 15px; color: var(--text-main); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
+        .bar-bg { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-top: 6px; }
+        .bar-fill { height: 100%; background: linear-gradient(90deg, #404040, #a3a3a3); width: 0%; transition: width 0.5s ease; border-radius: 10px; }
+        .goal-label { font-size: 0.85rem; display: flex; justify-content: space-between; margin-top: 12px; color: #cbd5e1; font-weight: bold; }
+
+        @media (max-width: 768px) {
+            .side-challenges { position: static; width: 85%; margin: 30px auto; border-right: 1px solid rgba(255,255,255,0.05); border-top: 6px solid var(--primary-color); }
+            body { flex-direction: column; overflow-y: auto; padding: 40px 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="color-settings">
+        <div class="picker-group">
+            <label>لون الخلفية</label>
+            <input type="color" id="bgPicker" value="#000000">
+        </div>
+        <div class="picker-group">
+            <label>لون السبحة</label>
+            <input type="color" id="colorPicker" value="#262626">
+        </div>
+    </div>
+
+    <div class="tasbih-card">
+        <h1>سبحة الذاكرين 📿</h1>
+        
+        <select id="dhikrSelect">
+            <option value="سبحان الله">سبحان الله</option>
+            <option value="الحمد لله">الحمد لله</option>
+            <option value="الله أكبر">الله أكبر</option>
+            <option value="أستغفر الله">أستغفر الله</option>
+            <option value="لا إله إلا الله">لا إله إلا الله</option>
+            <option value="اللهم صلِ على محمد">الصلاة على النبي</option>
+        </select>
+
+        <div class="display-screen">
+            <div style="font-size: 1rem; color: #94a3b8; margin-bottom: 10px;" id="activeDhikr">سبحان الله</div>
+            <div class="counter-val" id="dailyCounter">0</div>
+            <div class="total-info">المجموع الكلي: <span id="totalCounter">0</span></div>
+        </div>
+
+        <button class="main-button" id="tapBtn">سبّح</button>
+        
+        <div>
+            <span class="reset-link" id="resetBtn">تصفير عداد اليوم</span>
+        </div>
+    </div>
+
+    <div class="side-challenges">
+        <h3>🏆 تحديات اليوم</h3>
+        <div id="goalsContainer"></div>
+    </div>
+
+    <script>
+        let dailyCount = parseInt(localStorage.getItem('tasbih_daily_count')) || 0;
+        let totalCount = parseInt(localStorage.getItem('tasbih_total_count')) || 0;
+        let lastVisitDate = localStorage.getItem('tasbih_last_date');
+        let dailyGoals = JSON.parse(localStorage.getItem('tasbih_goals')) || [100, 300, 1000];
+
+        const today = new Date().toDateString();
+
+        if (lastVisitDate !== today) {
+            dailyCount = 0; 
+            lastVisitDate = today;
+            dailyGoals = [
+                Math.floor(Math.random() * (100 - 33) + 33),  
+                Math.floor(Math.random() * (500 - 150) + 150), 
+                Math.floor(Math.random() * (2000 - 800) + 800) 
+            ].sort((a,b) => a-b);
+            saveData();
+        }
+
+        function saveData() {
+            localStorage.setItem('tasbih_daily_count', dailyCount);
+            localStorage.setItem('tasbih_total_count', totalCount);
+            localStorage.setItem('tasbih_last_date', today);
+            localStorage.setItem('tasbih_goals', JSON.stringify(dailyGoals));
+        }
+
+        function updateUI() {
+            document.getElementById('dailyCounter').innerText = dailyCount;
+            document.getElementById('totalCounter').innerText = totalCount;
+            
+            const container = document.getElementById('goalsContainer');
+            container.innerHTML = ''; 
+            
+            const titles = ["بداية الخير", "الذاكر المجتهد", "أعانك الله"];
+            dailyGoals.forEach((goal, i) => {
+                const percent = Math.min((dailyCount / goal) * 100, 100);
+                // تغيير لون شريط التقدم عشان يليق مع أي لون تختاره
+                container.innerHTML += `
+                    <div>
+                        <div class="goal-label"><span>${titles[i]}</span> <span>${dailyCount} / ${goal}</span></div>
+                        <div class="bar-bg"><div class="bar-fill" style="width:${percent}%; background: var(--text-main);"></div></div>
+                    </div>
+                `;
+            });
+        }
+
+        document.getElementById('tapBtn').addEventListener('click', () => {
+            dailyCount++;
+            totalCount++;
+            updateUI();
+            saveData();
+            if (navigator.vibrate) navigator.vibrate(40);
+        });
+
+        // تحكم في لون خلفية الصفحة بالكامل
+        document.getElementById('bgPicker').addEventListener('input', (e) => {
+            document.documentElement.style.setProperty('--bg-color', e.target.value);
+        });
+
+        // تحكم في لون الزرار والتفاصيل (السبحة)
+        document.getElementById('colorPicker').addEventListener('input', (e) => {
+            const color = e.target.value;
+            document.documentElement.style.setProperty('--primary-color', color);
+            // تغميق اللون شوية للتدريج عشان الزرار يفضل مجسم
+            document.documentElement.style.setProperty('--accent-color', color + 'cc'); 
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if(confirm("متأكد إنك عايز تصفر عداد النهاردة؟ المجموع الكلي مش هيتأثر.")) {
+                dailyCount = 0;
+                updateUI();
+                saveData();
+            }
+        });
+
+        document.getElementById('dhikrSelect').addEventListener('change', (e) => {
+            document.getElementById('activeDhikr').innerText = e.target.value;
+        });
+
+        updateUI();
+    </script>
+</body>
+</html>

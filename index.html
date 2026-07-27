@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تطبيق الماهر | القرآن الكريم والأذكار</title>
+  <title>تطبيق الماهر | القرآن الكريم والأذكار والأحاديث النبوية</title>
   <link rel="icon" type="image/png" sizes="192x192" href="Assets/icon/icon-192.png">
   <link rel="apple-touch-icon" href="Assets/icon/icon-512.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,6 +44,37 @@
       align-items: center;
       padding-bottom: 40px;
       background-image: radial-gradient(circle at 50% 0%, #1a2c4e 0%, #0a0e17 75%);
+    }
+
+    /* شاشة التحميل */
+    #loadingScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-primary);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: opacity 0.5s ease;
+    }
+
+    .loader-spinner {
+      margin-top: 25px;
+      width: 50px;
+      height: 50px;
+      border: 5px solid var(--border-color);
+      border-top: 5px solid var(--accent-gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     header {
@@ -97,6 +128,8 @@
       justify-content: center;
       cursor: pointer;
       transition: all 0.2s ease;
+      text-decoration: none;
+      color: var(--text-main);
     }
 
     .icon-btn:hover {
@@ -574,19 +607,94 @@
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
     }
+
+    .hadith-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .hadith-card:hover {
+      border-color: var(--accent-gold);
+    }
+
+    .hadith-header-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .hadith-badge {
+      background: rgba(212, 175, 55, 0.15);
+      color: var(--accent-gold);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+
+    .hadith-num {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .hadith-text-content {
+      font-family: 'Amiri', serif;
+      font-size: 1.25rem;
+      line-height: 2;
+      color: var(--text-main);
+      text-align: justify;
+      margin-bottom: 20px;
+    }
+
+    .hadith-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .hadith-action-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .hadith-action-btn:hover {
+      color: var(--accent-gold);
+      border-color: var(--accent-gold);
+    }
   </style>
 </head>
 <body>
+
+  <div id="loadingScreen">
+    <img src="Assets/icon/icon-192.png" alt="الماهر" style="width: 120px; height: 120px; border-radius: 25px; margin-bottom: 20px; box-shadow: 0 0 25px rgba(212, 175, 55, 0.5);">
+    <h1 style="color: var(--accent-gold); font-size: 2.2rem; margin-bottom: 15px; font-weight: 900;">تطبيق الماهر</h1>
+    <p style="color: var(--text-main); font-size: 1.3rem; font-weight: bold;">صلِّ على الحبيب محمد ﷺ</p>
+    <div class="loader-spinner"></div>
+  </div>
 
   <header>
     <div class="brand">
       <img src="Assets/icon/icon-192.png" alt="الماهر">
       <div>
         <h1>تطبيق الماهر</h1>
-        <p>القرآن الكريم والأذكار اليومية</p>
+        <p>القرآن الكريم والأذكار والأحاديث النبوية</p>
       </div>
     </div>
     <div class="header-actions">
+      <a href="Assets/Data/tasbiih/tasbiih.html" target="_blank" class="icon-btn" title="سبحة الذاكرين" style="font-size: 1.3rem;">📿</a>
       <button class="icon-btn" id="settingsBtn" title="الإعدادات">
         <img src="Assets/buttons/Gear.png" alt="Settings">
       </button>
@@ -597,6 +705,8 @@
     <button class="nav-tab active" data-tab="quran">القرآن الكريم (استماع)</button>
     <button class="nav-tab" data-tab="download">تحميل القرآن الكريم</button>
     <button class="nav-tab" data-tab="adhkar">الأذكار والآداب</button>
+    <button class="nav-tab" data-tab="hadith">الأحاديث النبوية</button>
+    <button class="nav-tab" data-tab="prayer">مواقيت الصلاة</button>
   </nav>
 
   <main class="container">
@@ -609,7 +719,7 @@
           
           <div class="form-group search-container">
             <label>بحث عن قارئ:</label>
-            <input type="text" id="reciterSearch" class="input-control" placeholder="اكتب اسم القارئ...">
+            <input type="text" id="reciterSearch" class="input-control" placeholder="اكتب اسم القارئ (مثل: المنشاوي)...">
             <div id="reciterSearchResults" class="search-results-list"></div>
           </div>
 
@@ -719,7 +829,7 @@
         <div style="margin-top: 30px;">
           <h3 style="color: var(--accent-gold); margin-bottom: 15px; font-size: 1.1rem;">اختر سورة للتحميل المباشر:</h3>
           <div id="dlSurahList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; max-height: 450px; overflow-y: auto; padding-left: 5px;">
-            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -744,6 +854,85 @@
       <div class="adhkar-grid" id="adhkarList"></div>
     </section>
 
+    <section id="hadithTab" class="tab-content">
+      <div class="adhkar-header">
+        <div class="adhkar-search">
+          <input type="text" id="hadithSearch" class="input-control" placeholder="ابحث في الأحاديث النبوية الشريفة (كلمة، راوٍ، أو موضوع)...">
+        </div>
+        <div class="form-group" style="margin-bottom:0; min-width:200px;">
+          <select id="hadithBookSelect">
+            <option value="ALL">جميع كتب الأحاديث</option>
+            <option value="bukhari">صحيح البخاري</option>
+            <option value="muslim">صحيح مسلم</option>
+            <option value="ibnmajah">سنن ابن ماجه</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="adhkar-cats" id="hadithBookChips">
+        <button class="cat-chip active" data-book="ALL">الكل</button>
+        <button class="cat-chip" data-book="bukhari">صحيح البخاري</button>
+        <button class="cat-chip" data-book="muslim">صحيح مسلم</button>
+        <button class="cat-chip" data-book="ibnmajah">سنن ابن ماجه</button>
+      </div>
+
+      <div id="hadithList" style="display: flex; flex-direction: column; gap: 20px; margin-top: 20px;"></div>
+
+      <div style="text-align: center; margin-top: 25px;">
+        <button id="loadMoreHadithBtn" class="count-btn btn-gold" style="display: none; margin: 0 auto; padding: 12px 30px;">
+          عرض المزيد من الأحاديث
+        </button>
+      </div>
+    </section>
+
+    <section id="prayerTab" class="tab-content">
+      <div class="card" style="text-align: center; max-width: 700px; margin: 0 auto;">
+        <h2 style="color: var(--accent-gold); margin-bottom: 20px; font-size: 1.6rem;">مواقيت الصلاة</h2>
+        <p style="color: var(--text-muted); margin-bottom: 25px;">قم بتحديد موقعك الجغرافي لعرض مواقيت الصلاة بدقة حسب منطقتك</p>
+        
+        <button id="getLocationBtn" class="count-btn btn-gold" style="margin: 0 auto; display: inline-flex; font-size: 1.1rem; padding: 12px 25px;">
+          📍 تحديد موقعي وعرض المواقيت
+        </button>
+        
+        <div id="prayerLoading" style="display: none; margin-top: 20px; color: var(--accent-emerald); font-weight: bold;">
+          جاري تحديد الموقع وجلب المواقيت...
+        </div>
+        
+        <div id="prayerError" style="display: none; margin-top: 20px; color: #ef4444; font-weight: bold;"></div>
+        
+        <div id="prayerResults" style="display: none; margin-top: 35px;">
+          <div style="font-size: 1.3rem; color: var(--text-main); margin-bottom: 25px; font-weight: bold; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;" id="prayerDate"></div>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px;">
+            <div style="background: var(--bg-secondary); padding: 20px 10px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+              <div style="color: var(--text-muted); font-size: 1rem; margin-bottom: 8px;">الفجر</div>
+              <div id="timeFajr" style="color: var(--accent-gold); font-size: 1.4rem; font-weight: bold;">--:--</div>
+            </div>
+            <div style="background: var(--bg-secondary); padding: 20px 10px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+              <div style="color: var(--text-muted); font-size: 1rem; margin-bottom: 8px;">الشروق</div>
+              <div id="timeSunrise" style="color: var(--accent-gold); font-size: 1.4rem; font-weight: bold;">--:--</div>
+            </div>
+            <div style="background: var(--bg-secondary); padding: 20px 10px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+              <div style="color: var(--text-muted); font-size: 1rem; margin-bottom: 8px;">الظهر</div>
+              <div id="timeDhuhr" style="color: var(--accent-gold); font-size: 1.4rem; font-weight: bold;">--:--</div>
+            </div>
+            <div style="background: var(--bg-secondary); padding: 20px 10px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+              <div style="color: var(--text-muted); font-size: 1rem; margin-bottom: 8px;">العصر</div>
+              <div id="timeAsr" style="color: var(--accent-gold); font-size: 1.4rem; font-weight: bold;">--:--</div>
+            </div>
+            <div style="background: var(--bg-secondary); padding: 20px 10px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+              <div style="color: var(--text-muted); font-size: 1rem; margin-bottom: 8px;">المغرب</div>
+              <div id="timeMaghrib" style="color: var(--accent-gold); font-size: 1.4rem; font-weight: bold;">--:--</div>
+            </div>
+            <div style="background: var(--bg-secondary); padding: 20px 10px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+              <div style="color: var(--text-muted); font-size: 1rem; margin-bottom: 8px;">العشاء</div>
+              <div id="timeIsha" style="color: var(--accent-gold); font-size: 1.4rem; font-weight: bold;">--:--</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <div class="modal" id="settingsModal">
@@ -753,7 +942,7 @@
         <button class="close-modal" id="closeSettings">&times;</button>
       </div>
       <div class="form-group">
-        <label>حجم خط الأذكار:</label>
+        <label>حجم خط الأذكار والأحاديث:</label>
         <input type="range" id="fontSizeControl" min="16" max="28" value="20" style="width:100%;">
       </div>
       <div class="form-group">
@@ -767,6 +956,17 @@
   <audio id="audioPlayer"></audio>
 
   <script>
+
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const loadingScreen = document.getElementById('loadingScreen');
+        loadingScreen.style.opacity = '0';
+        setTimeout(() => {
+          loadingScreen.style.display = 'none';
+        }, 500);
+      }, 2000); 
+    });
+
     const surahNames = [
       "الفاتحة", "البقرة", "آل عمران", "النساء", "المائدة", "الأنعام", "الأعراف", "الأنفال", "التوبة", "يونس",
       "هود", "يوسف", "الرعد", "إبراهيم", "الحجر", "النحل", "الإسراء", "الكهف", "مريم", "طه",
@@ -791,6 +991,11 @@
 
     let dlCurrentReciter = null;
     let dlCurrentMoshaf = null;
+
+    let allHadiths = [];
+    let filteredHadiths = [];
+    let hadithCurrentPage = 1;
+    const HADITHS_PER_PAGE = 20;
 
     const audioPlayer = document.getElementById('audioPlayer');
     const reciterSelect = document.getElementById('reciterSelect');
@@ -820,6 +1025,12 @@
     const dlSurahList = document.getElementById('dlSurahList');
     const downloadFullBtn = document.getElementById('downloadFullBtn');
     const downloadAdhkarBtn = document.getElementById('downloadAdhkarBtn');
+
+    const hadithSearch = document.getElementById('hadithSearch');
+    const hadithBookSelect = document.getElementById('hadithBookSelect');
+    const hadithList = document.getElementById('hadithList');
+    const loadMoreHadithBtn = document.getElementById('loadMoreHadithBtn');
+
 
     document.querySelectorAll('.nav-tab').forEach(tab => {
       tab.addEventListener('click', () => {
@@ -878,7 +1089,7 @@
           reciterSelect.value = r.id;
           onReciterChange(r.id);
           reciterSearchResults.style.display = 'none';
-          reciterSearch.value = '';
+          reciterSearch.value = r.name;
         });
         reciterSearchResults.appendChild(item);
       });
@@ -1025,7 +1236,6 @@
       return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
 
-    /* --- منطق صفحة تحميل القرآن --- */
     function populateDlReciters(list) {
       dlReciterSelect.innerHTML = '';
       list.forEach(reciter => {
@@ -1055,7 +1265,7 @@
           dlReciterSelect.value = r.id;
           onDlReciterChange(r.id);
           dlReciterSearchResults.style.display = 'none';
-          dlReciterSearch.value = '';
+          dlReciterSearch.value = r.name;
         });
         dlReciterSearchResults.appendChild(item);
       });
@@ -1130,7 +1340,6 @@
       URL.revokeObjectURL(url);
     });
 
-    /* --- قسم الأذكار والتحميل --- */
     const adhkarCategorySelect = document.getElementById('adhkarCategorySelect');
     const adhkarSearch = document.getElementById('adhkarSearch');
     const catChips = document.getElementById('catChips');
@@ -1172,14 +1381,14 @@
 
     function selectAdhkarCat(catId, chipEl) {
       adhkarCategorySelect.value = catId;
-      document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('#catChips .cat-chip').forEach(c => c.classList.remove('active'));
       if (chipEl) chipEl.classList.add('active');
       renderAdhkar();
     }
 
     adhkarCategorySelect.addEventListener('change', (e) => {
       const val = e.target.value;
-      document.querySelectorAll('.cat-chip').forEach(c => {
+      document.querySelectorAll('#catChips .cat-chip').forEach(c => {
         if (val === 'ALL' && c.textContent === 'الكل') c.classList.add('active');
         else c.classList.remove('active');
       });
@@ -1267,10 +1476,207 @@
       URL.revokeObjectURL(url);
     });
 
+    const hadithFiles = [
+      { key: 'bukhari', name: 'صحيح البخاري', path: 'Assets/Data/hadith/bukhari.json' },
+      { key: 'muslim', name: 'صحيح مسلم', path: 'Assets/Data/hadith/muslim.json' },
+      { key: 'ibnmajah', name: 'سنن ابن ماجه', path: 'Assets/Data/hadith/ibnmajah.json' }
+    ];
+
+    function initHadithSection() {
+      hadithFiles.forEach(file => {
+        fetch(file.path)
+          .then(res => res.json())
+          .then(data => {
+            let items = Array.isArray(data) ? data : (data.hadiths || data.data || data.items || []);
+            items.forEach((item, index) => {
+              let text = item.text || item.ar || item.hadith || item.body || item.content || (typeof item === 'string' ? item : '');
+              let num = item.hadithNumber || item.number || item.id || (index + 1);
+              let chapter = item.chapter || item.section || item.chapterTitle || '';
+              if (text) {
+                allHadiths.push({
+                  bookKey: file.key,
+                  bookName: file.name,
+                  number: num,
+                  chapter: chapter,
+                  text: text
+                });
+              }
+            });
+            filterHadiths();
+          })
+          .catch(err => console.error(err));
+      });
+    }
+
+    function filterHadiths() {
+      const selectedBook = hadithBookSelect.value;
+      const searchTerm = hadithSearch.value.trim().toLowerCase();
+
+      filteredHadiths = allHadiths.filter(h => {
+        const matchesBook = (selectedBook === 'ALL' || h.bookKey === selectedBook);
+        const matchesSearch = !searchTerm || h.text.toLowerCase().includes(searchTerm) || (h.chapter && h.chapter.toLowerCase().includes(searchTerm)) || String(h.number).includes(searchTerm);
+        return matchesBook && matchesSearch;
+      });
+
+      hadithCurrentPage = 1;
+      renderHadithList();
+    }
+
+    function renderHadithList() {
+      if (hadithCurrentPage === 1) {
+        hadithList.innerHTML = '';
+      }
+
+      if (filteredHadiths.length === 0) {
+        hadithList.innerHTML = '<div style="text-align:center; padding: 30px; color: var(--text-muted);">لا توجد أحاديث مطابقة للبحث.</div>';
+        loadMoreHadithBtn.style.display = 'none';
+        return;
+      }
+
+      const startIndex = (hadithCurrentPage - 1) * HADITHS_PER_PAGE;
+      const endIndex = startIndex + HADITHS_PER_PAGE;
+      const currentBatch = filteredHadiths.slice(startIndex, endIndex);
+
+      currentBatch.forEach(h => {
+        const card = document.createElement('div');
+        card.className = 'hadith-card';
+        card.innerHTML = `
+          <div class="hadith-header-info">
+            <span class="hadith-badge">${h.bookName}</span>
+            <span class="hadith-num">حديث رقم: ${h.number} ${h.chapter ? ' | ' + h.chapter : ''}</span>
+          </div>
+          <div class="hadith-text-content">${h.text}</div>
+          <div class="hadith-actions">
+            <button class="hadith-action-btn copy-btn">📋 نسخ الحديث</button>
+          </div>
+        `;
+
+        const copyBtn = card.querySelector('.copy-btn');
+        copyBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(`${h.text}\n[${h.bookName} - حديث رقم ${h.number}]`);
+          copyBtn.textContent = '✔ تم النسخ';
+          setTimeout(() => copyBtn.textContent = '📋 نسخ الحديث', 2000);
+        });
+
+        hadithList.appendChild(card);
+      });
+
+      if (endIndex < filteredHadiths.length) {
+        loadMoreHadithBtn.style.display = 'block';
+      } else {
+        loadMoreHadithBtn.style.display = 'none';
+      }
+    }
+
+    loadMoreHadithBtn.addEventListener('click', () => {
+      hadithCurrentPage++;
+      renderHadithList();
+    });
+
+    hadithSearch.addEventListener('input', () => {
+      filterHadiths();
+    });
+
+    hadithBookSelect.addEventListener('change', (e) => {
+      const book = e.target.value;
+      document.querySelectorAll('#hadithBookChips .cat-chip').forEach(chip => {
+        if (chip.dataset.book === book) {
+          chip.classList.add('active');
+        } else {
+          chip.classList.remove('active');
+        }
+      });
+      filterHadiths();
+    });
+
+    document.querySelectorAll('#hadithBookChips .cat-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('#hadithBookChips .cat-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        hadithBookSelect.value = chip.dataset.book;
+        filterHadiths();
+      });
+    });
+
+    initHadithSection();
+
     document.getElementById('fontSizeControl').addEventListener('input', (e) => {
       const size = e.target.value + 'px';
-      document.querySelectorAll('.dhikr-text').forEach(el => el.style.fontSize = size);
+      document.querySelectorAll('.dhikr-text, .hadith-text-content').forEach(el => el.style.fontSize = size);
     });
+
+
+    const getLocationBtn = document.getElementById('getLocationBtn');
+    const prayerLoading = document.getElementById('prayerLoading');
+    const prayerError = document.getElementById('prayerError');
+    const prayerResults = document.getElementById('prayerResults');
+
+    getLocationBtn.addEventListener('click', () => {
+      prayerError.style.display = 'none';
+      prayerResults.style.display = 'none';
+      
+      if (!navigator.geolocation) {
+        prayerError.textContent = 'المتصفح الخاص بك لا يدعم ميزة تحديد الموقع الجغرافي.';
+        prayerError.style.display = 'block';
+        return;
+      }
+
+      prayerLoading.style.display = 'block';
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          fetchPrayerTimes(lat, lng);
+        },
+        (error) => {
+          prayerLoading.style.display = 'none';
+          prayerError.textContent = 'فشل في تحديد الموقع. يرجى السماح للمتصفح بالوصول لموقعك الجغرافي.';
+          prayerError.style.display = 'block';
+        }
+      );
+    });
+
+    function fetchPrayerTimes(lat, lng) {
+
+      fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lng}&method=5`)
+        .then(res => res.json())
+        .then(data => {
+          prayerLoading.style.display = 'none';
+          if (data.code === 200) {
+            const timings = data.data.timings;
+            const date = data.data.date.hijri;
+            
+            document.getElementById('prayerDate').textContent = `${date.weekday.ar}، ${date.day} ${date.month.ar} ${date.year} هـ`;
+            
+            document.getElementById('timeFajr').textContent = formatAMPM(timings.Fajr);
+            document.getElementById('timeSunrise').textContent = formatAMPM(timings.Sunrise);
+            document.getElementById('timeDhuhr').textContent = formatAMPM(timings.Dhuhr);
+            document.getElementById('timeAsr').textContent = formatAMPM(timings.Asr);
+            document.getElementById('timeMaghrib').textContent = formatAMPM(timings.Maghrib);
+            document.getElementById('timeIsha').textContent = formatAMPM(timings.Isha);
+            
+            prayerResults.style.display = 'block';
+          } else {
+            prayerError.textContent = 'حدث خطأ أثناء جلب مواقيت الصلاة من الخادم.';
+            prayerError.style.display = 'block';
+          }
+        })
+        .catch(err => {
+          prayerLoading.style.display = 'none';
+          prayerError.textContent = 'فشل الاتصال. تأكد من اتصالك بالإنترنت.';
+          prayerError.style.display = 'block';
+        });
+    }
+
+    function formatAMPM(time24) {
+      const [hoursStr, minutes] = time24.split(':');
+      let hours = parseInt(hoursStr, 10);
+      const ampm = hours >= 12 ? 'م' : 'ص';
+      hours = hours % 12;
+      hours = hours ? hours : 12; 
+      return `${hours}:${minutes} ${ampm}`;
+    }
   </script>
 </body>
 </html>
