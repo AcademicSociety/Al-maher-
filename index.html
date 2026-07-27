@@ -1481,22 +1481,20 @@
       if (e.target === settingsModal) settingsModal.classList.remove('open');
     });
 
-    fetch('https://api.quran.com/api/v4/resources/recitations?language=ar')
+    fetch('https://mp3quran.net/api/v3/reciters?language=ar')
       .then(res => res.json())
       .then(data => {
-        allReciters = data.recitations.map(r => ({
-          id: r.id,
-          name: r.reciter_name,
-          moshaf: [{
-            name: r.style || "مرتل",
-            server: r.id,
-            surah_list: Array.from({length: 114}, (_, i) => i + 1).join(',')
-          }]
-        }));
+        let recitersList = data.reciters || [];
+        
+        recitersList = recitersList.filter(r => !/[a-zA-Z]/.test(r.name));
+        
+        recitersList.sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+
+        allReciters = recitersList;
         populateReciters(allReciters);
         populateDlReciters(allReciters);
       })
-      .catch(err => console.error(err));
+      .catch(err => console.error('خطأ في جلب القراء:', err));
 
     function populateReciters(list) {
       reciterSelect.innerHTML = '';
@@ -1586,26 +1584,25 @@
 
       const surahNum = availableSurahs[index];
 
-      fetch(`https://api.quran.com/api/v4/chapter_recitations/${currentMoshaf.server}/${surahNum}`)
-        .then(res => res.json())
-        .then(data => {
-          const audioUrl = data.audio_file.audio_url;
-          audioPlayer.src = audioUrl;
-          displaySurahName.textContent = `سورة ${surahNames[surahNum - 1] || surahNum}`;
-          displayReciterName.textContent = currentReciter.name;
-          displayMoshafName.textContent = currentMoshaf.name;
-          surahSelect.value = index;
+      const paddedNum = String(surahNum).padStart(3, '0');
 
-          if (autoPlay) {
-            audioPlayer.play().then(() => {
-              playImg.src = 'Assets/buttons/Pause.png';
-              visualizer.classList.add('playing');
-            }).catch(e => console.log(e));
-          } else {
-            playImg.src = 'Assets/buttons/Play.png';
-            visualizer.classList.remove('playing');
-          }
-        });
+      const audioUrl = `${currentMoshaf.server}${paddedNum}.mp3`;
+
+      audioPlayer.src = audioUrl;
+      displaySurahName.textContent = `سورة ${surahNames[surahNum - 1] || surahNum}`;
+      displayReciterName.textContent = currentReciter.name;
+      displayMoshafName.textContent = currentMoshaf.name;
+      surahSelect.value = index;
+
+      if (autoPlay) {
+        audioPlayer.play().then(() => {
+          playImg.src = 'Assets/buttons/Pause.png';
+          visualizer.classList.add('playing');
+        }).catch(e => console.log('خطأ في التشغيل التلقائي:', e));
+      } else {
+        playImg.src = 'Assets/buttons/Play.png';
+        visualizer.classList.remove('playing');
+      }
     }
 
 
