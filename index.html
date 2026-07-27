@@ -1489,7 +1489,8 @@
           .then(data => {
             let items = Array.isArray(data) ? data : (data.hadiths || data.data || data.items || []);
             items.forEach((item, index) => {
-              let text = item.text || item.ar || item.hadith || item.body || item.content || (typeof item === 'string' ? item : '');
+              // تم تعديل هذا السطر عشان يقرا item.arabic من ملف الـ JSON
+              let text = item.arabic || item.text || item.ar || item.hadith || item.body || item.content || (typeof item === 'string' ? item : '');
               let num = item.hadithNumber || item.number || item.id || (index + 1);
               let chapter = item.chapter || item.section || item.chapterTitle || '';
               if (text) {
