@@ -1585,7 +1585,6 @@
       if (!currentMoshaf || !availableSurahs[index]) return;
 
       const surahNum = availableSurahs[index];
-      
 
       fetch(`https://api.quran.com/api/v4/chapter_recitations/${currentMoshaf.server}/${surahNum}`)
         .then(res => res.json())
@@ -1609,22 +1608,6 @@
         });
     }
 
-      audioPlayer.src = audioUrl;
-      displaySurahName.textContent = `سورة ${surahNames[surahNum - 1] || surahNum}`;
-      displayReciterName.textContent = currentReciter.name;
-      displayMoshafName.textContent = currentMoshaf.name;
-      surahSelect.value = index;
-
-      if (autoPlay) {
-        audioPlayer.play().then(() => {
-          playImg.src = 'Assets/buttons/Pause.png';
-          visualizer.classList.add('playing');
-        }).catch(e => console.log(e));
-      } else {
-        playImg.src = 'Assets/buttons/Play.png';
-        visualizer.classList.remove('playing');
-      }
-    }
 
     playBtn.addEventListener('click', () => {
       if (audioPlayer.paused) {
