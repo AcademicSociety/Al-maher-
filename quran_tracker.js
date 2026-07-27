@@ -215,35 +215,48 @@
     }
   }
 
-  // 4. دالة المزامنة اللي بتمشي مع مشغل الصوت (Highlight)
+  // 4. دالة المزامنة المحدثة بدون وميض وبدون تشنج التمرير
   function syncAudio(currentTimeSec) {
     if (!isTrackerOpen || !wordTimeline.length) return;
     const currMs = currentTimeSec * 1000;
     
     // إيجاد الكلمة المنطوقة حالياً
-    const activeItem = wordTimeline.find(item => currMs >= item.start && currMs <= item.end);
+    let activeItem = wordTimeline.find(item => currMs >= item.start && currMs <= item.end);
+
+    // تفادي الوميض: لو الصوت في فترة صمت بين كلمتين، نحافظ على آخر كلمة تمت قراءتها
+    if (!activeItem && currMs > 0) {
+      const lastItem = wordTimeline[wordTimeline.length - 1];
+      if (currMs <= lastItem.end) {
+        for (let i = wordTimeline.length - 1; i >= 0; i--) {
+          if (currMs >= wordTimeline[i].start) {
+            activeItem = wordTimeline[i];
+            break;
+          }
+        }
+      }
+    }
 
     if (activeItem) {
-      if (currentActiveWordEl && currentActiveWordEl !== activeItem.element) {
-        currentActiveWordEl.classList.remove('active-word');
+      // تنفيذ التغيير والتمرير فقط إذا انتقلت التلاوة لكلمة جديدة فعلياً
+      if (currentActiveWordEl !== activeItem.element) {
+        if (currentActiveWordEl) currentActiveWordEl.classList.remove('active-word');
+        if (currentActiveAyahEl && currentActiveAyahEl !== activeItem.ayahElement) {
+          currentActiveAyahEl.classList.remove('active-ayah');
+        }
+
+        activeItem.element.classList.add('active-word');
+        activeItem.ayahElement.classList.add('active-ayah');
+        
+        currentActiveWordEl = activeItem.element;
+        currentActiveAyahEl = activeItem.ayahElement;
+
+        // التمرير لمنتصف الشاشة يحدث مرة واحدة فقط عند تغير الكلمة
+        const modalBody = document.getElementById('tBody');
+        if (modalBody) {
+          const offset = activeItem.element.offsetTop - (modalBody.clientHeight / 2);
+          modalBody.scrollTo({ top: offset, behavior: 'smooth' });
+        }
       }
-      if (currentActiveAyahEl && currentActiveAyahEl !== activeItem.ayahElement) {
-        currentActiveAyahEl.classList.remove('active-ayah');
-      }
-
-      activeItem.element.classList.add('active-word');
-      activeItem.ayahElement.classList.add('active-ayah');
-      
-      currentActiveWordEl = activeItem.element;
-      currentActiveAyahEl = activeItem.ayahElement;
-
-      // تمرير ناعم للصفحة بحيث الكلمة تفضل في النص
-      const modalBody = document.getElementById('tBody');
-      const offset = activeItem.element.offsetTop - (modalBody.clientHeight / 2);
-      modalBody.scrollTo({ top: offset, behavior: 'smooth' });
-
-    } else {
-      if (currentActiveWordEl) currentActiveWordEl.classList.remove('active-word');
     }
   }
 
@@ -259,6 +272,11 @@
         const surahSelect = document.getElementById('surahSelect');
         const reciterSelect = document.getElementById('reciterSelect');
         
+        // إعادة تصفير العناصر السابقة لتجنب الأخطاء
+        currentActiveWordEl = null;
+        currentActiveAyahEl = null;
+        wordTimeline = [];
+
         // إصلاح خطأ رقم السورة: استخدام المتغير العام availableSurahs
         const selectedIndex = parseInt(surahSelect.value);
         const actualSurahId = window.availableSurahs ? window.availableSurahs[selectedIndex] : selectedIndex + 1;
@@ -281,6 +299,8 @@
       closeBtn.addEventListener('click', () => {
         modal.classList.remove('open');
         isTrackerOpen = false;
+        currentActiveWordEl = null;
+        currentActiveAyahEl = null;
       });
     }
 
