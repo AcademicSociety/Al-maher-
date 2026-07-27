@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
       margin: 2px;
       border-radius: 8px;
       transition: background-color 0.3s ease, border-color 0.3s ease;
-      line-height: 2.5;
+      line-height: 2.4;
       border: 1px solid transparent;
     }
     .tracker-ayah.active-ayah {
@@ -36,14 +36,11 @@ document.addEventListener('DOMContentLoaded', () => {
       transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.15s ease, color 0.15s ease;
       cursor: pointer;
     }
-    .tracker-word:hover {
-      background-color: rgba(251, 191, 36, 0.2);
-    }
     .tracker-word.active-word {
       background-color: #fbbf24 !important;
       color: #0f172a !important;
       font-weight: bold;
-      transform: scale(1.15);
+      transform: scale(1.18);
       box-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
       position: relative;
       z-index: 5;
@@ -58,11 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const surahNum = availableSurahs[currentSurahIndex];
-    const surahName = (typeof surahNames !== 'undefined' && surahNames[surahNum - 1]) ? surahNames[surahNum - 1] : 'سورة ' + surahNum;
-    const reciterName = (typeof currentReciter !== 'undefined' && currentReciter) ? currentReciter.name : 'القارئ الحالي';
+    const surahName = surahNames[surahNum - 1] || 'سورة ' + surahNum;
+    const reciterName = currentReciter ? currentReciter.name : 'القارئ الحالي';
 
     trackerTitle.textContent = `📖 سورة ${surahName}`;
-    trackerSubTitle.textContent = `بصوت: ${reciterName} | التظليل والمزامنة الذكية`;
+    trackerSubTitle.textContent = `بصوت: ${reciterName} | مزامنة دقيقة (كلمة بكلمة)`;
     
     trackerModal.classList.add('open');
     fetchAndDisplayTrackerSurah(surahNum);
@@ -79,135 +76,104 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   async function fetchAndDisplayTrackerSurah(surahNum) {
-    trackerContent.innerHTML = '<p style="text-align: center; color: var(--accent-gold); font-size: 1.2rem;">جاري تحميل نص السورة والمزامنة...</p>';
+    trackerContent.innerHTML = '<p style="text-align: center; color: var(--accent-gold);">جاري مزامنة الآيات بدقة...</p>';
     wordTimeline = [];
-    activeAyahIndex = -1;
-    activeWordKey = null;
-
+    
     try {
-      const res = await fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${surahNum}`);
-      if (!res.ok) throw new Error('فشل جلب نص السورة');
-      const data = await res.json();
 
-      if (data && data.verses && data.verses.length > 0) {
-        currentTrackerAyahs = data.verses;
-        renderTrackerAyahs(surahNum);
+      const textRes = await fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${surahNum}`);
+      const textData = await textRes.json();
+      
+
+      const reciterId = currentMoshaf.server; 
+      const timeRes = await fetch(`https://api.quran.com/api/v4/chapter_recitations/${reciterId}/${surahNum}?segments=true`);
+      const timeData = await timeRes.json();
+
+      if (textData.verses && timeData.audio_file.verse_timings) {
+        currentTrackerAyahs = textData.verses;
+        renderTrackerAyahs(surahNum, timeData.audio_file.verse_timings);
       } else {
-        throw new Error('لا توجد آيات');
+        throw new Error("بيانات ناقصة");
       }
     } catch (error) {
+      trackerContent.innerHTML = '<p style="text-align: center; color: #ef4444;">عذراً، التزامن الدقيق غير متوفر لهذا القارئ أو السورة.</p>';
       console.error(error);
-      fetchFallbackQuranText(surahNum);
     }
   }
 
-  async function fetchFallbackQuranText(surahNum) {
-    try {
-      const res = await fetch(`https://api.alquran.cloud/v1/surah/${surahNum}`);
-      const data = await res.json();
-      if (data && data.data && data.data.ayahs) {
-        currentTrackerAyahs = data.data.ayahs.map(a => ({
-          verse_key: `${surahNum}:${a.numberInSurah}`,
-          verse_number: a.numberInSurah,
-          text_uthmani: a.text
-        }));
-        renderTrackerAyahs(surahNum);
-      } else {
-        trackerContent.innerHTML = '<p style="text-align: center; color: #ef4444;">تعذر تحميل نص السورة، يرجى التأكد من الاتصال بالإنترنت.</p>';
-      }
-    } catch (e) {
-      trackerContent.innerHTML = '<p style="text-align: center; color: #ef4444;">حدث خطأ أثناء تحميل السورة.</p>';
-    }
-  }
-
-  function renderTrackerAyahs(surahNum) {
+  function renderTrackerAyahs(surahNum, verseTimings) {
     let html = '';
     
     if (surahNum !== 9 && surahNum !== 1) {
-      html += '<div style="text-align: center; color: var(--accent-gold); margin-bottom: 20px; font-size: 1.8rem; font-family: \'Amiri\', serif; width: 100%;">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div><div style="display: inline;">';
+      html += '<div style="text-align: center; color: var(--accent-gold); margin-bottom: 20px; font-size: 1.8rem; width: 100%;">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div><div style="display: inline;">';
     } else {
       html += '<div style="display: inline;">';
     }
 
-    let totalChars = 0;
-    const ayahDataList = [];
-
     currentTrackerAyahs.forEach((ayah, aIdx) => {
-      let text = ayah.text_uthmani || '';
+      let text = ayah.text_uthmani;
       if (surahNum !== 1 && ayah.verse_number === 1) {
-        text = text.replace(/^بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ\s*/, '').trim();
+        text = text.replace('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ', '').trim();
       }
 
       const words = text.split(/\s+/).filter(w => w.length > 0);
-      const ayahCharCount = words.reduce((sum, w) => sum + w.length, 0);
-      totalChars += ayahCharCount;
-
-      ayahDataList.push({
-        aIdx,
-        verse_number: ayah.verse_number,
-        words,
-        ayahCharCount
-      });
-    });
-
-    const hasBasmalaAudio = (surahNum !== 9 && surahNum !== 1);
-    const basmalaWeight = hasBasmalaAudio ? 25 : 0; 
-    const grandTotalWeight = totalChars + basmalaWeight;
-
-    let currentWeight = hasBasmalaAudio ? basmalaWeight : 0;
-
-    ayahDataList.forEach((item) => {
       let ayahWordsHtml = '';
+      
+ 
+      const timingObj = verseTimings.find(t => t.verse_key === ayah.verse_key);
+      const segments = timingObj && timingObj.segments ? timingObj.segments : [];
 
-      item.words.forEach((wordText, wIdx) => {
-        const wordWeight = wordText.length;
-        const startRatio = currentWeight / grandTotalWeight;
-        currentWeight += wordWeight;
-        const endRatio = currentWeight / grandTotalWeight;
+      words.forEach((wordText, wIdx) => {
+
+        let startTime = 0;
+        let endTime = 0;
+        
+        if (segments[wIdx]) {
+            startTime = segments[wIdx][1] / 1000; // تحويل من مللي ثانية إلى ثانية
+            endTime = segments[wIdx][2] / 1000;
+        }
 
         wordTimeline.push({
-          aIdx: item.aIdx,
+          aIdx,
           wIdx,
-          key: `${item.aIdx}-${wIdx}`,
-          startRatio,
-          endRatio
+          key: `${aIdx}-${wIdx}`,
+          startTime: startTime,
+          endTime: endTime
         });
 
-        ayahWordsHtml += `<span class="tracker-word" id="word-span-${item.aIdx}-${wIdx}">${wordText}</span> `;
+        ayahWordsHtml += `<span class="tracker-word" id="word-span-${aIdx}-${wIdx}">${wordText}</span> `;
       });
 
-      html += `<span class="tracker-ayah" id="ayah-span-${item.aIdx}">${ayahWordsHtml}<span style="color: var(--accent-gold); font-size: 1.1rem; font-family: 'Tajawal', sans-serif; font-weight: bold;"> ﴿${item.verse_number}﴾ </span></span> `;
+      html += `<span class="tracker-ayah" id="ayah-span-${aIdx}">${ayahWordsHtml}<span style="color: var(--accent-gold); font-size: 1.1rem; font-family: 'Tajawal', sans-serif;">﴿${ayah.verse_number}﴾</span></span> `;
     });
 
     html += '</div>';
     trackerContent.innerHTML = html;
 
+
     wordTimeline.forEach(item => {
       const el = document.getElementById(`word-span-${item.key}`);
-      if (el) {
+      if (el && item.startTime > 0) {
         el.addEventListener('click', () => {
-          if (audioPlayer && audioPlayer.duration) {
-            audioPlayer.currentTime = item.startRatio * audioPlayer.duration;
-            audioPlayer.play();
+          if (audioPlayer) {
+            audioPlayer.currentTime = item.startTime;
           }
         });
       }
     });
+
+    activeAyahIndex = -1;
+    activeWordKey = null;
   }
 
-  // تحديث التظليل أثناء تشغيل الصوت
   if (typeof audioPlayer !== 'undefined') {
     audioPlayer.addEventListener('timeupdate', () => {
-      if (!trackerModal.classList.contains('open') || wordTimeline.length === 0 || !audioPlayer.duration) return;
+      if (!trackerModal.classList.contains('open') || wordTimeline.length === 0) return;
 
-      const progressRatio = audioPlayer.currentTime / audioPlayer.duration;
-      if (isNaN(progressRatio)) return;
+      const currentTime = audioPlayer.currentTime;
 
-      let currentItem = wordTimeline.find(w => progressRatio >= w.startRatio && progressRatio < w.endRatio);
-      
-      if (!currentItem && progressRatio >= 0.99) {
-        currentItem = wordTimeline[wordTimeline.length - 1];
-      }
+
+      let currentItem = wordTimeline.find(w => currentTime >= w.startTime && currentTime < w.endTime);
 
       if (currentItem) {
         if (currentItem.aIdx !== activeAyahIndex) {
