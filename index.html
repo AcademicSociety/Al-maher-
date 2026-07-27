@@ -1481,10 +1481,18 @@
       if (e.target === settingsModal) settingsModal.classList.remove('open');
     });
 
-    fetch('Assets/Data/reciters.json')
+    fetch('https://api.quran.com/api/v4/resources/recitations?language=ar')
       .then(res => res.json())
       .then(data => {
-        allReciters = data.reciters || [];
+        allReciters = data.recitations.map(r => ({
+          id: r.id,
+          name: r.reciter_name,
+          moshaf: [{
+            name: r.style || "مرتل",
+            server: r.id,
+            surah_list: Array.from({length: 114}, (_, i) => i + 1).join(',')
+          }]
+        }));
         populateReciters(allReciters);
         populateDlReciters(allReciters);
       })
@@ -1577,8 +1585,29 @@
       if (!currentMoshaf || !availableSurahs[index]) return;
 
       const surahNum = availableSurahs[index];
-      const paddedNum = String(surahNum).padStart(3, '0');
-      const audioUrl = `${currentMoshaf.server}${paddedNum}.mp3`;
+      
+
+      fetch(`https://api.quran.com/api/v4/chapter_recitations/${currentMoshaf.server}/${surahNum}`)
+        .then(res => res.json())
+        .then(data => {
+          const audioUrl = data.audio_file.audio_url;
+          audioPlayer.src = audioUrl;
+          displaySurahName.textContent = `سورة ${surahNames[surahNum - 1] || surahNum}`;
+          displayReciterName.textContent = currentReciter.name;
+          displayMoshafName.textContent = currentMoshaf.name;
+          surahSelect.value = index;
+
+          if (autoPlay) {
+            audioPlayer.play().then(() => {
+              playImg.src = 'Assets/buttons/Pause.png';
+              visualizer.classList.add('playing');
+            }).catch(e => console.log(e));
+          } else {
+            playImg.src = 'Assets/buttons/Play.png';
+            visualizer.classList.remove('playing');
+          }
+        });
+    }
 
       audioPlayer.src = audioUrl;
       displaySurahName.textContent = `سورة ${surahNames[surahNum - 1] || surahNum}`;
