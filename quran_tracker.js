@@ -9,7 +9,44 @@ document.addEventListener('DOMContentLoaded', () => {
   const trackerSubTitle = document.getElementById('trackerSubTitle');
   
   let currentTrackerAyahs = [];
+  let wordTimeline = [];
   let activeAyahIndex = -1;
+  let activeWordKey = null;
+
+  const style = document.createElement('style');
+  style.innerHTML = `
+    .tracker-ayah {
+      display: inline;
+      padding: 4px 6px;
+      margin: 2px;
+      border-radius: 8px;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+      line-height: 2.4;
+      border: 1px solid transparent;
+    }
+    .tracker-ayah.active-ayah {
+      background-color: rgba(16, 185, 129, 0.18);
+      border-color: rgba(16, 185, 129, 0.4);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+    }
+    .tracker-word {
+      display: inline-block;
+      padding: 1px 4px;
+      border-radius: 4px;
+      transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.15s ease, color 0.15s ease;
+      cursor: pointer;
+    }
+    .tracker-word.active-word {
+      background-color: #fbbf24 !important;
+      color: #0f172a !important;
+      font-weight: bold;
+      transform: scale(1.18);
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
+      position: relative;
+      z-index: 5;
+    }
+  `;
+  document.head.appendChild(style);
 
   openTrackerBtn.addEventListener('click', () => {
 
@@ -23,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const reciterName = currentReciter ? currentReciter.name : 'القارئ الحالي';
 
     trackerTitle.textContent = `📖 سورة ${surahName}`;
-    trackerSubTitle.textContent = `بصوت: ${reciterName} | المزامنة التفاعلية تعمل`;
+    trackerSubTitle.textContent = `بصوت: ${reciterName} | المزامنة التفاعلية تعمل (كلمة بكلمة)`;
     
     trackerModal.classList.add('open');
     fetchAndDisplayTrackerSurah(surahNum);
@@ -59,63 +96,108 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderTrackerAyahs(surahNum) {
     let html = '';
-    
+    wordTimeline = [];
+    let totalWordsInSurah = 0;
+
+    currentTrackerAyahs.forEach((ayah) => {
+      let text = ayah.text;
+      if (surahNum !== 1 && ayah.numberInSurah === 1) {
+        text = text.replace('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ', '').trim();
+      }
+      const words = text.split(/\s+/).filter(w => w.length > 0);
+      totalWordsInSurah += words.length;
+    });
+
     if (surahNum !== 9 && surahNum !== 1) {
       html += '<div style="text-align: center; color: var(--accent-gold); margin-bottom: 20px; font-size: 1.8rem; width: 100%;">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div><div style="display: inline;">';
     } else {
       html += '<div style="display: inline;">';
     }
 
-    currentTrackerAyahs.forEach((ayah, index) => {
+    let globalWordCounter = 0;
+
+    currentTrackerAyahs.forEach((ayah, aIdx) => {
       let text = ayah.text;
       if (surahNum !== 1 && ayah.numberInSurah === 1) {
         text = text.replace('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ', '').trim();
       }
 
-      html += `<span class="tracker-ayah" id="ayah-span-${index}" style="padding: 3px 6px; border-radius: 8px; transition: all 0.3s ease; cursor: pointer;" title="اضغط للانتقال التقريري للآية">${text} <span style="color: var(--accent-gold); font-size: 1.1rem; font-family: 'Tajawal', sans-serif;">﴿${ayah.numberInSurah}﴾</span></span> `;
+      const words = text.split(/\s+/).filter(w => w.length > 0);
+      let ayahWordsHtml = '';
+
+      words.forEach((wordText, wIdx) => {
+        const startRatio = globalWordCounter / totalWordsInSurah;
+        globalWordCounter++;
+        const endRatio = globalWordCounter / totalWordsInSurah;
+
+        wordTimeline.push({
+          aIdx,
+          wIdx,
+          key: `${aIdx}-${wIdx}`,
+          startRatio,
+          endRatio
+        });
+
+        ayahWordsHtml += `<span class="tracker-word" id="word-span-${aIdx}-${wIdx}">${wordText}</span> `;
+      });
+
+      html += `<span class="tracker-ayah" id="ayah-span-${aIdx}">${ayahWordsHtml}<span style="color: var(--accent-gold); font-size: 1.1rem; font-family: 'Tajawal', sans-serif;">﴿${ayah.numberInSurah}﴾</span></span> `;
     });
 
     html += '</div>';
     trackerContent.innerHTML = html;
 
-    document.querySelectorAll('.tracker-ayah').forEach((el, idx) => {
-      el.addEventListener('click', () => {
-        if (audioPlayer && audioPlayer.duration) {
-          const jumpTime = (idx / currentTrackerAyahs.length) * audioPlayer.duration;
-          audioPlayer.currentTime = jumpTime;
-        }
-      });
+    wordTimeline.forEach(item => {
+      const el = document.getElementById(`word-span-${item.key}`);
+      if (el) {
+        el.addEventListener('click', () => {
+          if (audioPlayer && audioPlayer.duration) {
+            audioPlayer.currentTime = item.startRatio * audioPlayer.duration;
+          }
+        });
+      }
     });
+
+    activeAyahIndex = -1;
+    activeWordKey = null;
   }
 
   if (typeof audioPlayer !== 'undefined') {
     audioPlayer.addEventListener('timeupdate', () => {
-      if (!trackerModal.classList.contains('open') || currentTrackerAyahs.length === 0 || !audioPlayer.duration) return;
+      if (!trackerModal.classList.contains('open') || wordTimeline.length === 0 || !audioPlayer.duration) return;
 
       const progressRatio = audioPlayer.currentTime / audioPlayer.duration;
-      const estimatedIndex = Math.min(
-        Math.floor(progressRatio * currentTrackerAyahs.length),
-        currentTrackerAyahs.length - 1
-      );
+      if (isNaN(progressRatio)) return;
 
-      if (estimatedIndex !== activeAyahIndex) {
-        if (activeAyahIndex !== -1) {
-          const prevEl = document.getElementById(`ayah-span-${activeAyahIndex}`);
-          if (prevEl) {
-            prevEl.style.background = 'transparent';
-            prevEl.style.color = 'var(--text-main)';
-            prevEl.style.boxShadow = 'none';
+      let currentItem = wordTimeline.find(w => progressRatio >= w.startRatio && progressRatio < w.endRatio);
+      if (!currentItem && progressRatio >= 0.99) {
+        currentItem = wordTimeline[wordTimeline.length - 1];
+      }
+
+      if (currentItem) {
+        if (currentItem.aIdx !== activeAyahIndex) {
+          if (activeAyahIndex !== -1) {
+            const prevAyah = document.getElementById(`ayah-span-${activeAyahIndex}`);
+            if (prevAyah) prevAyah.classList.remove('active-ayah');
+          }
+          activeAyahIndex = currentItem.aIdx;
+          const curAyah = document.getElementById(`ayah-span-${activeAyahIndex}`);
+          if (curAyah) {
+            curAyah.classList.add('active-ayah');
+            curAyah.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
         }
 
-        activeAyahIndex = estimatedIndex;
-        const currentEl = document.getElementById(`ayah-span-${activeAyahIndex}`);
-        if (currentEl) {
-          currentEl.style.background = 'rgba(16, 185, 129, 0.2)'; // لون أخضر شفاف وأنيق
-          currentEl.style.color = '#fff';
-          currentEl.style.boxShadow = '0 0 10px rgba(16, 185, 129, 0.3)';
-          
-          currentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (currentItem.key !== activeWordKey) {
+          if (activeWordKey) {
+            const prevWord = document.getElementById(`word-span-${activeWordKey}`);
+            if (prevWord) prevWord.classList.remove('active-word');
+          }
+          activeWordKey = currentItem.key;
+          const curWord = document.getElementById(`word-span-${activeWordKey}`);
+          if (curWord) {
+            curWord.classList.add('active-word');
+          }
         }
       }
     });
