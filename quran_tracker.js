@@ -3,7 +3,7 @@
  */
 
 (function () {
-  // ربط قراء mp3quran بمعرفات التلاوة في quran.com لجلب التوقيتات بدقة
+
   const RECITER_MAP = [
     { keywords: ['منشاوي', 'minsh'], id: 9 }, 
     { keywords: ['عبدالباسط', 'عبد الباسط', 'basit'], id: 2 }, 
@@ -35,7 +35,7 @@
         return item.id;
       }
     }
-    return 7; // العفاسي كافتراضي لأقرب توقيت وسرعة متوسطة
+    return 7; 
   }
 
   function injectTrackerUI() {
@@ -132,7 +132,6 @@
     currentActiveAyahEl = null;
 
     try {
-      // 1. جلب الآيات والكلمات من API القرآن
       let allVerses = [];
       let page = 1;
       let totalPages = 1;
@@ -152,7 +151,6 @@
         return;
       }
 
-      // 2. جلب التوقيتات
       let audioFiles = [];
       try {
         let timingReq = await fetch(`https://api.quran.com/api/v4/recitations/${reciterId}/by_chapter/${surahId}`);
@@ -172,12 +170,10 @@
       const timingMap = {};
       audioFiles.forEach(af => { timingMap[af.verse_key] = af; });
 
-      // إضافة البسملة (إلا في الفاتحة والتوبة)
       if (parseInt(surahId) !== 1 && parseInt(surahId) !== 9) {
         tBody.innerHTML += '<div style="text-align: center; color: #d4af37; margin-bottom: 30px; font-size: 2.2rem;">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>';
       }
 
-      // 3. رسم السورة وحساب التوقيتات
       allVerses.forEach(verse => {
         const vKey = verse.verse_key;
         const vTiming = timingMap[vKey];
@@ -230,7 +226,6 @@
 
           wordTimeline.push(wordObj);
 
-          // عند الضغط على الكلمة للقفز إليها
           wordSpan.addEventListener('click', (e) => {
             e.stopPropagation();
             const player = document.getElementById('audioPlayer');
@@ -272,7 +267,6 @@
     }
   }
 
-  // 4. دالة المزامنة المقواة
   function syncAudio(currentTimeSec) {
     if (!isTrackerOpen || !wordTimeline.length) return;
 
@@ -286,7 +280,6 @@
 
     let activeItem = null;
 
-    // البحث عن الكلمة المناسبة للوقت الحالي بشكل تصاعدي مباشر
     for (let i = 0; i < totalWords; i++) {
       const item = wordTimeline[i];
       let startMs = 0;
@@ -306,7 +299,6 @@
         break;
       }
 
-      // معالجة الفواصل بين الكلمات
       if (currMs >= startMs) {
         let nextStartMs = 0;
         if (i < totalWords - 1) {
@@ -341,7 +333,6 @@
         currentActiveWordEl = activeItem.element;
         currentActiveAyahEl = activeItem.ayahElement;
 
-        // التمرير التلقائي السلس إلى منتصف النافذة
         const modalBody = document.getElementById('tBody');
         if (modalBody && activeItem.element) {
           const bodyRect = modalBody.getBoundingClientRect();
@@ -370,8 +361,10 @@
         wordTimeline = [];
         maxRawTime = 0;
 
-        // أخذ رقم السورة الصحيح مباشرة من قيمة surahSelect
-        const actualSurahId = surahSelect ? parseInt(surahSelect.value) || 1 : 1;
+        const selectedIndex = surahSelect ? parseInt(surahSelect.value) : 0;
+        const actualSurahId = window.availableSurahs && window.availableSurahs[selectedIndex] 
+                              ? window.availableSurahs[selectedIndex] 
+                              : selectedIndex + 1;
         
         const surahName = surahSelect && surahSelect.options[surahSelect.selectedIndex] ? surahSelect.options[surahSelect.selectedIndex].text : '';
         const reciterName = reciterSelect && reciterSelect.options[reciterSelect.selectedIndex] ? reciterSelect.options[reciterSelect.selectedIndex].text : '';
