@@ -1085,37 +1085,15 @@
         <div class="radio-card">
           <h3 style="color: var(--accent-gold); margin-bottom: 15px;">إذاعة السنة النبوية - المدينة المنورة</h3>
           <button class="count-btn btn-gold" id="ytSunnahBtn" onclick="toggleYtAudio()" style="margin: 0 auto;">▶ تشغيل البث</button>
-          
           <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 12px;">
             <span style="font-size: 0.85rem; color: var(--text-muted);">🔊</span>
             <input type="range" min="0" max="100" step="5" value="100" style="width: 90px; accent-color: var(--accent-gold); cursor: pointer;" oninput="setYtVolume(this.value)" title="مستوى الصوت">
             <button onclick="navigator.clipboard.writeText('https://www.youtube.com/live/3dEBSElM57U'); this.innerText='✔ تم'; setTimeout(()=>this.innerText='🔗 نسخ',1500);" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-muted); padding: 5px 12px; border-radius: var(--radius-sm); font-size: 0.8rem; cursor: pointer; transition: 0.2s; font-family: 'Tajawal', sans-serif;" title="نسخ رابط الإذاعة">🔗 نسخ</button>
           </div>
         </div>
-        
-        <div class="radio-card">
-          <h3 style="color: var(--accent-gold); margin-bottom: 15px;">إذاعة تكبيرات العيد والأدعية</h3>
-          <button class="count-btn btn-gold play-radio-btn" style="margin: 0 auto;" data-url="https://qurango.net/radio/takbeer">▶ تشغيل البث</button>
-          <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 12px;">
-            <span style="font-size: 0.85rem; color: var(--text-muted);">🔊</span>
-            <input type="range" min="0" max="1" step="0.05" value="1" style="width: 90px; accent-color: var(--accent-gold); cursor: pointer;" oninput="document.getElementById('audioPlayer').volume = this.value" title="مستوى الصوت">
-            <button onclick="navigator.clipboard.writeText(this.closest('.radio-card').querySelector('[data-url]').dataset.url); this.innerText='✔ تم'; setTimeout(()=>this.innerText='🔗 نسخ',1500);" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-muted); padding: 5px 12px; border-radius: var(--radius-sm); font-size: 0.8rem; cursor: pointer; transition: 0.2s; font-family: 'Tajawal', sans-serif;" title="نسخ رابط الإذاعة">🔗 نسخ</button>
-          </div>
-        </div>
-        
         <div class="radio-card">
           <h3 style="color: var(--accent-gold); margin-bottom: 15px;">الفتوي</h3>
           <button class="count-btn btn-gold play-radio-btn" style="margin: 0 auto;" data-url="https://qurango.net/radio/fatwa">▶ تشغيل البث</button>
-          <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 12px;">
-            <span style="font-size: 0.85rem; color: var(--text-muted);">🔊</span>
-            <input type="range" min="0" max="1" step="0.05" value="1" style="width: 90px; accent-color: var(--accent-gold); cursor: pointer;" oninput="document.getElementById('audioPlayer').volume = this.value" title="مستوى الصوت">
-            <button onclick="navigator.clipboard.writeText(this.closest('.radio-card').querySelector('[data-url]').dataset.url); this.innerText='✔ تم'; setTimeout(()=>this.innerText='🔗 نسخ',1500);" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-muted); padding: 5px 12px; border-radius: var(--radius-sm); font-size: 0.8rem; cursor: pointer; transition: 0.2s; font-family: 'Tajawal', sans-serif;" title="نسخ رابط الإذاعة">🔗 نسخ</button>
-          </div>
-        </div>
-        
-        <div class="radio-card">
-          <h3 style="color: var(--accent-gold); margin-bottom: 15px;">إذاعة أذكار الصباح والمساء</h3>
-          <button class="count-btn btn-gold play-radio-btn" style="margin: 0 auto;" data-url="https://qurango.net/radio/athkar">▶ تشغيل البث</button>
           <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 12px;">
             <span style="font-size: 0.85rem; color: var(--text-muted);">🔊</span>
             <input type="range" min="0" max="1" step="0.05" value="1" style="width: 90px; accent-color: var(--accent-gold); cursor: pointer;" oninput="document.getElementById('audioPlayer').volume = this.value" title="مستوى الصوت">
