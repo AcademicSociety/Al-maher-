@@ -18,6 +18,7 @@
   ];
 
   let wordTimeline = [];
+  let maxRawTime = 0;
   let currentActiveWordEl = null;
   let currentActiveAyahEl = null;
   let isTrackerOpen = false;
@@ -88,7 +89,6 @@
           scroll-behavior: smooth;
         }
         
-        /* تحسين ألوان الـ Highlight للآية والكلمة بشكل واضح جداً */
         .t-ayah {
           display: inline; padding: 4px 6px; border-radius: 10px; transition: background-color 0.3s ease;
         }
@@ -127,6 +127,7 @@
     
     tBody.innerHTML = '<div class="t-loader">⏳ جاري مزامنة الآيات والكلمات...</div>';
     wordTimeline = [];
+    maxRawTime = 0;
     currentActiveWordEl = null;
     currentActiveAyahEl = null;
 
@@ -151,7 +152,7 @@
         return;
       }
 
-      // 2. جلب التوقيتات من القارئ، وإذا لم تتوفر يجلب القارئ البديل (العفاسي - 7) ضماناً للمزامنة
+      // 2. جلب التوقيتات
       let audioFiles = [];
       try {
         let timingReq = await fetch(`https://api.quran.com/api/v4/recitations/${reciterId}/by_chapter/${surahId}`);
@@ -164,7 +165,7 @@
           audioFiles = timingData.audio_files || [];
         }
       } catch (e) {
-        console.warn("توقيتات القارئ غير متوفرة، جاري تجربة القارئ البديل.");
+        console.warn("توقيتات القارئ غير متوفرة، سيتم استخدام المزامنة التناسبية.");
       }
 
       tBody.innerHTML = '';
@@ -176,7 +177,7 @@
         tBody.innerHTML += '<div style="text-align: center; color: #d4af37; margin-bottom: 30px; font-size: 2.2rem;">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>';
       }
 
-      // 3. رسم السورة وحساب التوقيتات الدقيقة لكل كلمة وآية
+      // 3. رسم السورة وحساب التوقيتات
       allVerses.forEach(verse => {
         const vKey = verse.verse_key;
         const vTiming = timingMap[vKey];
@@ -198,20 +199,16 @@
           let wordStart = 0;
           let wordEnd = 0;
 
-          // البحث عن الكلمة في مصفوفة segments
           const seg = segments.find(s => s[0] === w.position);
 
           if (seg) {
             wordStart = seg[1];
             wordEnd = seg[2];
-
-            // تصحيح التوقيت النسبي وتعميمه ليصبح توقيتاً مطلقاً بمستوى السورة
             if (vStart > 0 && wordStart < vStart) {
               wordStart += vStart;
               wordEnd += vStart;
             }
           } else if (vDuration > 0) {
-            // توزيع وقت الآية بالتساوي على كلماتها في حال عدم توفر التوقيت بالكلمة
             const part = vDuration / wordsOnly.length;
             wordStart = vStart + (idx * part);
             wordEnd = wordStart + part;
@@ -220,19 +217,38 @@
             wordEnd = vEnd;
           }
 
-          wordTimeline.push({
-            start: wordStart,
-            end: wordEnd,
+          if (wordEnd > maxRawTime) {
+            maxRawTime = wordEnd;
+          }
+
+          const wordObj = {
+            rawStart: wordStart,
+            rawEnd: wordEnd,
             element: wordSpan,
             ayahElement: ayahSpan
-          });
+          };
 
-          // الضغط على أي كلمة للقفز بالصوت إليها
+          wordTimeline.push(wordObj);
+
+          // عند الضغط على الكلمة للقفز إليها
           wordSpan.addEventListener('click', (e) => {
             e.stopPropagation();
             const player = document.getElementById('audioPlayer');
-            if (player && wordStart > 0) {
-              player.currentTime = wordStart / 1000;
+            if (!player) return;
+
+            const totalDur = player.duration;
+            const totalWords = wordTimeline.length;
+            const wordIdx = wordTimeline.indexOf(wordObj);
+
+            let targetTimeSec = 0;
+            if (maxRawTime > 0 && totalDur && !isNaN(totalDur)) {
+              targetTimeSec = (wordStart / maxRawTime) * totalDur;
+            } else if (totalDur && !isNaN(totalDur)) {
+              targetTimeSec = (wordIdx / totalWords) * totalDur;
+            }
+
+            if (targetTimeSec >= 0) {
+              player.currentTime = targetTimeSec;
               player.play();
             }
           });
@@ -248,7 +264,7 @@
         tBody.appendChild(ayahSpan);
       });
 
-      if (tSubTitle) tSubTitle.textContent = 'مزامنة دقيقة بالكلمة جاهزة.';
+      if (tSubTitle) tSubTitle.textContent = 'مزامنة دقيقة جاهزة.';
 
     } catch (err) {
       console.error("Tracker Load Error:", err);
@@ -256,19 +272,55 @@
     }
   }
 
-  // 4. دالة المزامنة وتطوير Highlight الكلمة والآية
+  // 4. دالة المزامنة المقواة
   function syncAudio(currentTimeSec) {
     if (!isTrackerOpen || !wordTimeline.length) return;
-    const currMs = currentTimeSec * 1000;
-    
-    // إيجاد الكلمة المنطوقة حالياً
-    let activeItem = wordTimeline.find(item => currMs >= item.start && currMs <= item.end);
 
-    // الحفاظ على التظليل في فترات السكتات والوقف بين الكلمات
-    if (!activeItem && currMs > 0) {
-      for (let i = wordTimeline.length - 1; i >= 0; i--) {
-        if (currMs >= wordTimeline[i].start) {
-          activeItem = wordTimeline[i];
+    const player = document.getElementById('audioPlayer');
+    const duration = player ? player.duration : 0;
+    if (!duration || isNaN(duration) || duration <= 0) return;
+
+    const totalWords = wordTimeline.length;
+    const currMs = currentTimeSec * 1000;
+    const totalMs = duration * 1000;
+
+    let activeItem = null;
+
+    // البحث عن الكلمة المناسبة للوقت الحالي بشكل تصاعدي مباشر
+    for (let i = 0; i < totalWords; i++) {
+      const item = wordTimeline[i];
+      let startMs = 0;
+      let endMs = 0;
+
+      if (maxRawTime > 0) {
+        const scale = totalMs / maxRawTime;
+        startMs = item.rawStart * scale;
+        endMs = item.rawEnd * scale;
+      } else {
+        startMs = (i / totalWords) * totalMs;
+        endMs = ((i + 1) / totalWords) * totalMs;
+      }
+
+      if (currMs >= startMs && currMs < endMs) {
+        activeItem = item;
+        break;
+      }
+
+      // معالجة الفواصل بين الكلمات
+      if (currMs >= startMs) {
+        let nextStartMs = 0;
+        if (i < totalWords - 1) {
+          if (maxRawTime > 0) {
+            nextStartMs = wordTimeline[i + 1].rawStart * (totalMs / maxRawTime);
+          } else {
+            nextStartMs = ((i + 1) / totalWords) * totalMs;
+          }
+          if (currMs < nextStartMs) {
+            activeItem = item;
+            break;
+          }
+        } else {
+          activeItem = item;
           break;
         }
       }
@@ -316,12 +368,13 @@
         currentActiveWordEl = null;
         currentActiveAyahEl = null;
         wordTimeline = [];
+        maxRawTime = 0;
 
-        const selectedIndex = parseInt(surahSelect.value);
-        const actualSurahId = window.availableSurahs ? window.availableSurahs[selectedIndex] : (selectedIndex + 1 || 1);
+        // أخذ رقم السورة الصحيح مباشرة من قيمة surahSelect
+        const actualSurahId = surahSelect ? parseInt(surahSelect.value) || 1 : 1;
         
-        const surahName = surahSelect.options[surahSelect.selectedIndex]?.text || '';
-        const reciterName = reciterSelect ? reciterSelect.options[reciterSelect.selectedIndex]?.text || '' : '';
+        const surahName = surahSelect && surahSelect.options[surahSelect.selectedIndex] ? surahSelect.options[surahSelect.selectedIndex].text : '';
+        const reciterName = reciterSelect && reciterSelect.options[reciterSelect.selectedIndex] ? reciterSelect.options[reciterSelect.selectedIndex].text : '';
         const serverUrl = player ? player.src || '' : '';
 
         const titleEl = document.getElementById('tTitle');
