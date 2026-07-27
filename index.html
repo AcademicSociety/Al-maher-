@@ -118,6 +118,8 @@
       padding: 6px;
       border-radius: var(--radius-md);
       border: 1px solid var(--border-color);
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     .nav-tab {
@@ -455,6 +457,7 @@
       align-items: center;
       gap: 8px;
       transition: background 0.2s;
+      text-decoration: none;
     }
 
     .count-btn:hover {
@@ -466,6 +469,15 @@
       color: var(--accent-emerald);
       border: 1px solid var(--accent-emerald);
       cursor: default;
+    }
+
+    .btn-gold {
+      background: var(--accent-gold);
+      color: #000;
+    }
+
+    .btn-gold:hover {
+      background: var(--accent-gold-hover);
     }
 
     .dhikr-reset {
@@ -552,6 +564,16 @@
       background: var(--bg-card-hover);
       color: var(--accent-gold);
     }
+
+    .surah-dl-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+    }
   </style>
 </head>
 <body>
@@ -572,7 +594,8 @@
   </header>
 
   <nav class="main-nav">
-    <button class="nav-tab active" data-tab="quran">القرآن الكريم</button>
+    <button class="nav-tab active" data-tab="quran">القرآن الكريم (استماع)</button>
+    <button class="nav-tab" data-tab="download">تحميل القرآن الكريم</button>
     <button class="nav-tab" data-tab="adhkar">الأذكار والآداب</button>
   </nav>
 
@@ -665,13 +688,54 @@
       </div>
     </section>
 
+    <section id="downloadTab" class="tab-content">
+      <div class="card">
+        <div class="card-title">تحميل المصحف الشريف وسوره بصوت قارئك المفضل</div>
+        
+        <div class="quran-grid">
+          <div class="form-group search-container">
+            <label>بحث عن قارئ للتحميل:</label>
+            <input type="text" id="dlReciterSearch" class="input-control" placeholder="اكتب اسم القارئ...">
+            <div id="dlReciterSearchResults" class="search-results-list"></div>
+          </div>
+
+          <div class="form-group">
+            <label>القارئ:</label>
+            <select id="dlReciterSelect"></select>
+          </div>
+
+          <div class="form-group">
+            <label>الرواية / المصحف:</label>
+            <select id="dlMoshafSelect"></select>
+          </div>
+
+          <div class="form-group" style="display:flex; align-items:flex-end;">
+            <button id="downloadFullBtn" class="count-btn btn-gold" style="width:100%; height: 46px; justify-content: center;">
+              ⬇️ تحميل المصحف كاملاً (ملف قائمة m3u)
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-top: 30px;">
+          <h3 style="color: var(--accent-gold); margin-bottom: 15px; font-size: 1.1rem;">اختر سورة للتحميل المباشر:</h3>
+          <div id="dlSurahList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; max-height: 450px; overflow-y: auto; padding-left: 5px;">
+            </div>
+        </div>
+      </div>
+    </section>
+
     <section id="adhkarTab" class="tab-content">
       <div class="adhkar-header">
         <div class="adhkar-search">
           <input type="text" id="adhkarSearch" class="input-control" placeholder="بحث في الأذكار والآداب...">
         </div>
-        <div class="form-group" style="margin-bottom:0; min-width:220px;">
+        <div class="form-group" style="margin-bottom:0; min-width:200px;">
           <select id="adhkarCategorySelect"></select>
+        </div>
+        <div>
+          <button id="downloadAdhkarBtn" class="count-btn btn-gold" title="تحميل الأذكار المعروضة كملف نصي">
+            📥 تحميل الأذكار
+          </button>
         </div>
       </div>
 
@@ -725,6 +789,9 @@
     let availableSurahs = [];
     let currentSurahIndex = 0;
 
+    let dlCurrentReciter = null;
+    let dlCurrentMoshaf = null;
+
     const audioPlayer = document.getElementById('audioPlayer');
     const reciterSelect = document.getElementById('reciterSelect');
     const moshafSelect = document.getElementById('moshafSelect');
@@ -745,6 +812,14 @@
     const displayMoshafName = document.getElementById('displayMoshafName');
     const speedControl = document.getElementById('speedControl');
     const volumeControl = document.getElementById('volumeControl');
+
+    const dlReciterSelect = document.getElementById('dlReciterSelect');
+    const dlMoshafSelect = document.getElementById('dlMoshafSelect');
+    const dlReciterSearch = document.getElementById('dlReciterSearch');
+    const dlReciterSearchResults = document.getElementById('dlReciterSearchResults');
+    const dlSurahList = document.getElementById('dlSurahList');
+    const downloadFullBtn = document.getElementById('downloadFullBtn');
+    const downloadAdhkarBtn = document.getElementById('downloadAdhkarBtn');
 
     document.querySelectorAll('.nav-tab').forEach(tab => {
       tab.addEventListener('click', () => {
@@ -770,6 +845,7 @@
       .then(data => {
         allReciters = data.reciters || [];
         populateReciters(allReciters);
+        populateDlReciters(allReciters);
       })
       .catch(err => console.error(err));
 
@@ -949,6 +1025,112 @@
       return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
 
+    /* --- منطق صفحة تحميل القرآن --- */
+    function populateDlReciters(list) {
+      dlReciterSelect.innerHTML = '';
+      list.forEach(reciter => {
+        const option = document.createElement('option');
+        option.value = reciter.id;
+        option.textContent = reciter.name;
+        dlReciterSelect.appendChild(option);
+      });
+      if (list.length > 0) {
+        onDlReciterChange(list[0].id);
+      }
+    }
+
+    dlReciterSearch.addEventListener('input', (e) => {
+      const term = e.target.value.trim().toLowerCase();
+      if (!term) {
+        dlReciterSearchResults.style.display = 'none';
+        return;
+      }
+      const filtered = allReciters.filter(r => r.name.toLowerCase().includes(term));
+      dlReciterSearchResults.innerHTML = '';
+      filtered.slice(0, 10).forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'search-item';
+        item.textContent = r.name;
+        item.addEventListener('click', () => {
+          dlReciterSelect.value = r.id;
+          onDlReciterChange(r.id);
+          dlReciterSearchResults.style.display = 'none';
+          dlReciterSearch.value = '';
+        });
+        dlReciterSearchResults.appendChild(item);
+      });
+      dlReciterSearchResults.style.display = filtered.length > 0 ? 'block' : 'none';
+    });
+
+    dlReciterSelect.addEventListener('change', (e) => {
+      onDlReciterChange(parseInt(e.target.value));
+    });
+
+    function onDlReciterChange(reciterId) {
+      dlCurrentReciter = allReciters.find(r => r.id === reciterId);
+      if (!dlCurrentReciter) return;
+
+      dlMoshafSelect.innerHTML = '';
+      dlCurrentReciter.moshaf.forEach((m, idx) => {
+        const option = document.createElement('option');
+        option.value = idx;
+        option.textContent = m.name;
+        dlMoshafSelect.appendChild(option);
+      });
+
+      onDlMoshafChange(0);
+    }
+
+    dlMoshafSelect.addEventListener('change', (e) => {
+      onDlMoshafChange(parseInt(e.target.value));
+    });
+
+    function onDlMoshafChange(moshafIdx) {
+      if (!dlCurrentReciter || !dlCurrentReciter.moshaf[moshafIdx]) return;
+      dlCurrentMoshaf = dlCurrentReciter.moshaf[moshafIdx];
+
+      const surahNumList = dlCurrentMoshaf.surah_list.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+      
+      dlSurahList.innerHTML = '';
+      surahNumList.forEach((surahNum) => {
+        const paddedNum = String(surahNum).padStart(3, '0');
+        const audioUrl = `${dlCurrentMoshaf.server}${paddedNum}.mp3`;
+        const surahName = surahNames[surahNum - 1] || 'سورة ' + surahNum;
+
+        const item = document.createElement('div');
+        item.className = 'surah-dl-item';
+        item.innerHTML = `
+          <span style="font-weight: bold; font-size: 0.95rem;">${surahNum}. ${surahName}</span>
+          <a href="${audioUrl}" download="${surahName} - ${dlCurrentReciter.name}.mp3" target="_blank" class="count-btn" style="padding: 5px 12px; font-size: 0.85rem;">
+            📥 تحميل
+          </a>
+        `;
+        dlSurahList.appendChild(item);
+      });
+    }
+
+    downloadFullBtn.addEventListener('click', () => {
+      if (!dlCurrentMoshaf) return;
+      const surahNumList = dlCurrentMoshaf.surah_list.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+      let m3uContent = "#EXTM3U\n";
+      
+      surahNumList.forEach((surahNum) => {
+        const paddedNum = String(surahNum).padStart(3, '0');
+        const audioUrl = `${dlCurrentMoshaf.server}${paddedNum}.mp3`;
+        const surahName = surahNames[surahNum - 1] || 'سورة ' + surahNum;
+        m3uContent += `#EXTINF:-1,${surahName} - ${dlCurrentReciter.name}\n${audioUrl}\n`;
+      });
+
+      const blob = new Blob([m3uContent], { type: 'audio/x-mpegurl' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `المصحف الكامل - ${dlCurrentReciter.name}.m3u`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    /* --- قسم الأذكار والتحميل --- */
     const adhkarCategorySelect = document.getElementById('adhkarCategorySelect');
     const adhkarSearch = document.getElementById('adhkarSearch');
     const catChips = document.getElementById('catChips');
@@ -1062,6 +1244,28 @@
         });
       });
     }
+
+    downloadAdhkarBtn.addEventListener('click', () => {
+      const selectedCatId = adhkarCategorySelect.value;
+      let textToDownload = "=== تطبيق الماهر - الأذكار والآداب ===\n\n";
+
+      allAdhkar.forEach(cat => {
+        if (selectedCatId !== 'ALL' && String(cat.id) !== String(selectedCatId)) return;
+
+        textToDownload += `--- ${cat.category} ---\n\n`;
+        cat.array.forEach((item, idx) => {
+          textToDownload += `${idx + 1}. ${item.text}\n[التكرار: ${item.count || 1}]\n\n`;
+        });
+      });
+
+      const blob = new Blob([textToDownload], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `الأذكار - ${selectedCatId === 'ALL' ? 'الكل' : 'مختارات'}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
 
     document.getElementById('fontSizeControl').addEventListener('input', (e) => {
       const size = e.target.value + 'px';
