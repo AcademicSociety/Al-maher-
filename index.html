@@ -145,34 +145,76 @@
       height: 22px;
     }
 
+    /* غلاف شريط التنقل الذكي */
+    .nav-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      max-width: 1100px;
+      margin: 20px 0;
+      position: relative;
+    }
     .main-nav {
       display: flex;
       gap: 10px;
-      margin: 25px 0;
+      margin: 0;
       background: var(--bg-secondary);
-      padding: 6px;
+      padding: 8px;
       border-radius: var(--radius-md);
       border: 1px solid var(--border-color);
-      flex-wrap: wrap;
-      justify-content: center;
+      flex-wrap: nowrap; 
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      width: 100%;
+      scrollbar-width: none; 
+    }
+    .main-nav::-webkit-scrollbar {
+      display: none;
     }
 
     .nav-tab {
-      padding: 10px 24px;
+      padding: 10px 22px;
       border: none;
       background: transparent;
       color: var(--text-muted);
       font-weight: 700;
-      font-size: 1rem;
+      font-size: 0.95rem;
       border-radius: var(--radius-sm);
       cursor: pointer;
       transition: all 0.3s ease;
+      white-space: nowrap; /* منع انقسام النص داخل الزر */
+      flex-shrink: 0; /* منع انكماش الأزرار عند كثرتها */
     }
 
     .nav-tab.active {
       background: var(--accent-gold);
       color: #000;
       box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    }
+    .nav-arrow {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--accent-gold);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+      user-select: none;
+      box-shadow: var(--shadow);
+    }
+
+    .nav-arrow:hover {
+      background: var(--accent-gold);
+      color: #000;
+      border-color: var(--accent-gold);
+      transform: scale(1.1);
     }
 
     .container {
@@ -676,6 +718,31 @@
       color: var(--accent-gold);
       border-color: var(--accent-gold);
     }
+    .share-img-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Tajawal', sans-serif;
+    }
+
+    .share-img-btn:hover {
+      background: var(--accent-gold);
+      color: #000;
+      border-color: var(--accent-gold);
+      transform: scale(1.03);
+    }
+    .capturing .dhikr-footer,
+    .capturing .hadith-actions {
+      display: none !important;
+    }
     .events-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -910,16 +977,23 @@
     </div>
   </header>
 
-  <nav class="main-nav">
-    <button class="nav-tab active" data-tab="quran">القرآن الكريم (استماع)</button>
-    <button class="nav-tab" data-tab="quranText">المصحف المقروء</button>
-    <button class="nav-tab" data-tab="radio">إذاعة القرآن</button>
-    <button class="nav-tab" data-tab="download">تحميل القرآن الكريم</button>
-    <button class="nav-tab" data-tab="adhkar">الأذكار والآداب</button>
-    <button class="nav-tab" data-tab="hadith">الأحاديث النبوية</button>
-    <button class="nav-tab" data-tab="prayer">مواقيت الصلاة والقبلة</button>
-    <button class="nav-tab" data-tab="events">المناسبات الإسلامية</button>
-  </nav>
+  <div class="nav-wrapper">
+    <button class="nav-arrow" id="navScrollRight" title="التمرير لليمين">➔</button>
+
+    <nav class="main-nav" id="mainNav">
+      <button class="nav-tab active" data-tab="quran">القرآن الكريم (استماع)</button>
+      <button class="nav-tab" data-tab="quranText">المصحف المقروء</button>
+      <button class="nav-tab" data-tab="radio">إذاعة القرآن</button>
+      <button class="nav-tab" data-tab="download">تحميل القرآن الكريم</button>
+      <button class="nav-tab" data-tab="downloadAdhkar">تحميل الأذكار</button>
+      <button class="nav-tab" data-tab="adhkar">الأذكار والآداب</button>
+      <button class="nav-tab" data-tab="hadith">الأحاديث النبوية</button>
+      <button class="nav-tab" data-tab="prayer">مواقيت الصلاة والقبلة</button>
+      <button class="nav-tab" data-tab="events">المناسبات الإسلامية</button>
+      </nav>
+
+    <button class="nav-arrow" id="navScrollLeft" title="التمرير لليسار">⬅</button>
+  </div>
 
   <main class="container">
     
@@ -1323,6 +1397,25 @@
           </div>
           <button class="share-btn" onclick="shareEvent('card-eidAdha', 'عيد الأضحى')">📸 مشاركة كصورة</button>
           <div class="watermark">تم الإنشاء عبر تطبيق الماهر | صلِّ على الحبيب ﷺ</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="downloadAdhkarTab" class="tab-content">
+      <div class="card">
+        <div class="card-title">تحميل الأذكار والآداب (نصي TXT وصوتي MP3)</div>
+        
+        <div class="form-group search-container">
+          <label>ابحث عن قسم لتحميله:</label>
+          <input type="text" id="dlAdhkarSearchInput" class="input-control" placeholder="اكتب اسم القسم (مثل: أذكار الصباح، النوم، الصلاة)...">
+        </div>
+
+        <div id="dlAdhkarGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin: 20px 0; min-height: 420px;"></div>
+
+        <div class="book-controls" style="margin: 20px auto 0 auto; max-width: 450px; display: flex; justify-content: space-between; align-items: center;">
+          <button id="prevAdhkarDlBtn" class="page-btn">→ السابقة</button>
+          <span id="adhkarDlPageIndicator" style="color: var(--accent-gold); font-weight: bold; font-size: 0.95rem;"></span>
+          <button id="nextAdhkarDlBtn" class="page-btn">التالية ←</button>
         </div>
       </div>
     </section>
@@ -1783,6 +1876,7 @@
       .then(data => {
         allAdhkar = data || [];
         initAdhkarSection();
+        initDlAdhkarSection();
       })
       .catch(err => console.error(err));
 
@@ -1887,10 +1981,14 @@
             <div class="dhikr-text">${item.text}</div>
             <div class="dhikr-footer" style="flex-wrap: wrap; gap: 10px;">
               <button class="count-btn">التكرار: <span class="counter-num">${count}</span></button>
-              <div style="display: flex; gap: 10px; align-items: center;">
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <button class="share-img-btn share-dhikr-img" title="مشاركة كصورة">🖼️ صورة</button>
                 ${item.audio ? `<button class="dhikr-reset play-single-dhikr" style="color: var(--accent-gold); font-weight: bold; border: 1px solid var(--accent-gold); padding: 4px 10px; border-radius: 6px; cursor: pointer;">▶ استماع</button>` : ''}
                 <button class="dhikr-reset">إعادة ضبط</button>
               </div>
+            </div>
+            <div class="watermark" style="display: none; margin-top: 15px; font-size: 0.85rem; color: var(--accent-gold); text-align: center; border-top: 1px dashed var(--border-color); padding-top: 10px;">
+              ✨ تطبيق الماهر ✨
             </div>
           `;
 
@@ -1898,6 +1996,12 @@
           const counterNum = card.querySelector('.counter-num');
           const resetBtn = card.querySelector('.dhikr-reset');
           const playSingleBtn = card.querySelector('.play-single-dhikr');
+          const shareImgBtn = card.querySelector('.share-dhikr-img');
+
+          // تفعيل زر المشاركة كصورة للذكر
+          shareImgBtn.addEventListener('click', () => {
+            shareCardAsImage(card, 'ذكر_تطبيق_الماهر');
+          });
 
           if (playSingleBtn && item.audio) {
             const singleAudioUrl = getAudioUrl(item.audio);
@@ -2039,6 +2143,10 @@
           <div class="hadith-text-content">${h.text}</div>
           <div class="hadith-actions">
             <button class="hadith-action-btn copy-btn">📋 نسخ الحديث</button>
+            <button class="share-img-btn share-hadith-img">🖼️ مشاركة كصورة</button>
+          </div>
+          <div class="watermark" style="display: none; margin-top: 15px; font-size: 0.85rem; color: var(--accent-gold); text-align: center; border-top: 1px dashed var(--border-color); padding-top: 10px;">
+            ✨ تطبيق الماهر | الأحاديث النبوية الشريفة ✨
           </div>
         `;
 
@@ -2047,6 +2155,11 @@
           navigator.clipboard.writeText(`${h.text}\n[${h.bookName} - حديث رقم ${h.number}]`);
           copyBtn.textContent = '✔ تم النسخ';
           setTimeout(() => copyBtn.textContent = '📋 نسخ الحديث', 2000);
+        });
+
+        const shareImgBtn = card.querySelector('.share-hadith-img');
+        shareImgBtn.addEventListener('click', () => {
+          shareCardAsImage(card, `حديث_${h.bookName}_${h.number}`);
         });
 
         hadithList.appendChild(card);
@@ -2537,6 +2650,148 @@
         if (hlsVideo) hlsVideo.destroy();
       }
     });
+    let dlAdhkarCurrentPage = 1;
+    const ADHKAR_DL_PER_PAGE = 9; 
+    let filteredDlAdhkar = [];
+
+    function initDlAdhkarSection() {
+      filteredDlAdhkar = [...allAdhkar];
+      renderDlAdhkarPage();
+    }
+
+    document.getElementById('dlAdhkarSearchInput').addEventListener('input', (e) => {
+      const term = e.target.value.trim().toLowerCase();
+      filteredDlAdhkar = allAdhkar.filter(cat => cat.category.toLowerCase().includes(term));
+      dlAdhkarCurrentPage = 1; 
+      renderDlAdhkarPage();
+    });
+
+    function renderDlAdhkarPage() {
+      const grid = document.getElementById('dlAdhkarGrid');
+      grid.innerHTML = '';
+
+      if (filteredDlAdhkar.length === 0) {
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">لا توجد أقسام مطابقة للبحث.</p>';
+        document.getElementById('adhkarDlPageIndicator').textContent = '';
+        document.getElementById('prevAdhkarDlBtn').style.display = 'none';
+        document.getElementById('nextAdhkarDlBtn').style.display = 'none';
+        return;
+      }
+
+      const startIndex = (dlAdhkarCurrentPage - 1) * ADHKAR_DL_PER_PAGE;
+      const endIndex = startIndex + ADHKAR_DL_PER_PAGE;
+      const currentBatch = filteredDlAdhkar.slice(startIndex, endIndex);
+
+      currentBatch.forEach(cat => {
+        const card = document.createElement('div');
+        card.className = 'radio-card';
+        card.style.display = 'flex';
+        card.style.flexDirection = 'column';
+        card.style.justifyContent = 'space-between';
+
+        // التحقق من وجود ملف صوتي للقسم
+        let audioBtnHtml = '';
+        if (cat.audio) {
+          const audioUrl = getAudioUrl(cat.audio);
+          audioBtnHtml = `<a href="${audioUrl}" download="${cat.category}.mp3" target="_blank" class="count-btn" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-main); font-size: 0.85rem; justify-content: center; text-decoration: none;">🎧 تحميل صوتي (MP3)</a>`;
+        }
+
+        card.innerHTML = `
+          <div>
+            <h3 style="color: var(--accent-gold); margin-bottom: 8px; font-size: 1.1rem;">${cat.category}</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 15px;">يحتوي على: ${cat.array.length} ذِكراً</p>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button class="count-btn btn-gold dl-single-cat-btn" data-catid="${cat.id}" style="justify-content: center; font-size: 0.9rem; cursor: pointer;">📄 تحميل نصي (TXT)</button>
+            ${audioBtnHtml}
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+
+      grid.querySelectorAll('.dl-single-cat-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const catId = parseInt(e.currentTarget.dataset.catid);
+          downloadSingleAdhkarCategory(catId);
+        });
+      });
+
+      const totalPages = Math.ceil(filteredDlAdhkar.length / ADHKAR_DL_PER_PAGE);
+      document.getElementById('adhkarDlPageIndicator').textContent = `صفحة ${dlAdhkarCurrentPage} من ${totalPages}`;
+
+      document.getElementById('prevAdhkarDlBtn').style.display = dlAdhkarCurrentPage > 1 ? 'block' : 'none';
+      document.getElementById('nextAdhkarDlBtn').style.display = dlAdhkarCurrentPage < totalPages ? 'block' : 'none';
+    }
+
+    document.getElementById('prevAdhkarDlBtn').addEventListener('click', () => {
+      if (dlAdhkarCurrentPage > 1) {
+        dlAdhkarCurrentPage--;
+        renderDlAdhkarPage();
+      }
+    });
+
+    document.getElementById('nextAdhkarDlBtn').addEventListener('click', () => {
+      const totalPages = Math.ceil(filteredDlAdhkar.length / ADHKAR_DL_PER_PAGE);
+      if (dlAdhkarCurrentPage < totalPages) {
+        dlAdhkarCurrentPage++;
+        renderDlAdhkarPage();
+      }
+    });
+
+    function downloadSingleAdhkarCategory(catId) {
+      const cat = allAdhkar.find(c => c.id === catId);
+      if (!cat) return;
+
+      let textToDownload = `=== تطبيق الماهر - ${cat.category} ===\n\n`;
+      cat.array.forEach((item, idx) => {
+        textToDownload += `${idx + 1}. ${item.text}\n[التكرار: ${item.count || 1}]\n\n`;
+      });
+
+      const blob = new Blob([textToDownload], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${cat.category}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    const mainNav = document.getElementById('mainNav');
+    const scrollRightBtn = document.getElementById('navScrollRight');
+    const scrollLeftBtn = document.getElementById('navScrollLeft');
+
+    if (mainNav && scrollRightBtn && scrollLeftBtn) {
+      scrollRightBtn.addEventListener('click', () => {
+        mainNav.scrollBy({ left: 220, behavior: 'smooth' });
+      });
+
+      scrollLeftBtn.addEventListener('click', () => {
+        mainNav.scrollBy({ left: -220, behavior: 'smooth' });
+      });
+    }
+    function shareCardAsImage(cardElement, fileNamePrefix) {
+      const watermark = cardElement.querySelector('.watermark');
+     
+      cardElement.classList.add('capturing');
+      if (watermark) watermark.style.display = 'block';
+      html2canvas(cardElement, { 
+        backgroundColor: '#1c2942', 
+        scale: 2,
+        useCORS: true 
+      }).then(canvas => {
+        cardElement.classList.remove('capturing');
+        if (watermark) watermark.style.display = 'none';
+
+        const link = document.createElement('a');
+        link.download = `${fileNamePrefix}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }).catch(err => {
+        cardElement.classList.remove('capturing');
+        if (watermark) watermark.style.display = 'none';
+        console.error('حدث خطأ أثناء التقاط الصورة:', err);
+      });
+    }
   </script>
 <script src="youtube-radio.js"></script>
 <script src="quran_tracker.js"></script>
