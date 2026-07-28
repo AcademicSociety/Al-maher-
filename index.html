@@ -1044,7 +1044,7 @@
 
     <section id="radioTab" class="tab-content">
       <div class="card" style="text-align: center; margin-bottom: 20px;">
-        <h2 style="color: var(--accent-gold); font-size: 1.6rem; margin-bottom: 10px;">إذاعات القرآن الكريم المباشرة</h2>
+        <h2 style="color: var(--accent-gold); font-size: 1.6rem; margin-bottom: 10px;">إذاعات القرآن الكريم والاذكار والسنه النبوية</h2>
         <p style="color: var(--text-muted);">استمع للبث المباشر لأشهر الإذاعات الإسلامية</p>
       </div>
 
@@ -1085,15 +1085,26 @@
         <div class="radio-card">
           <h3 style="color: var(--accent-gold); margin-bottom: 15px;">إذاعة السنة النبوية - المدينة المنورة</h3>
           <button class="count-btn btn-gold" id="ytSunnahBtn" onclick="toggleYtAudio()" style="margin: 0 auto;">▶ تشغيل البث</button>
+          
           <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 12px;">
             <span style="font-size: 0.85rem; color: var(--text-muted);">🔊</span>
             <input type="range" min="0" max="100" step="5" value="100" style="width: 90px; accent-color: var(--accent-gold); cursor: pointer;" oninput="setYtVolume(this.value)" title="مستوى الصوت">
             <button onclick="navigator.clipboard.writeText('https://www.youtube.com/live/3dEBSElM57U'); this.innerText='✔ تم'; setTimeout(()=>this.innerText='🔗 نسخ',1500);" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-muted); padding: 5px 12px; border-radius: var(--radius-sm); font-size: 0.8rem; cursor: pointer; transition: 0.2s; font-family: 'Tajawal', sans-serif;" title="نسخ رابط الإذاعة">🔗 نسخ</button>
           </div>
-        </div>
+        </div>         
         <div class="radio-card">
           <h3 style="color: var(--accent-gold); margin-bottom: 15px;">الفتوي</h3>
           <button class="count-btn btn-gold play-radio-btn" style="margin: 0 auto;" data-url="https://qurango.net/radio/fatwa">▶ تشغيل البث</button>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 12px;">
+            <span style="font-size: 0.85rem; color: var(--text-muted);">🔊</span>
+            <input type="range" min="0" max="1" step="0.05" value="1" style="width: 90px; accent-color: var(--accent-gold); cursor: pointer;" oninput="document.getElementById('audioPlayer').volume = this.value" title="مستوى الصوت">
+            <button onclick="navigator.clipboard.writeText(this.closest('.radio-card').querySelector('[data-url]').dataset.url); this.innerText='✔ تم'; setTimeout(()=>this.innerText='🔗 نسخ',1500);" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-muted); padding: 5px 12px; border-radius: var(--radius-sm); font-size: 0.8rem; cursor: pointer; transition: 0.2s; font-family: 'Tajawal', sans-serif;" title="نسخ رابط الإذاعة">🔗 نسخ</button>
+          </div>
+        </div>
+        
+        <div class="radio-card">
+          <h3 style="color: var(--accent-gold); margin-bottom: 15px;">إذاعة أذكار الصباح والمساء</h3>
+          <button class="count-btn btn-gold play-radio-btn" style="margin: 0 auto;" data-url="https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_028.mp3">▶ تشغيل البث</button>
           <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 12px;">
             <span style="font-size: 0.85rem; color: var(--text-muted);">🔊</span>
             <input type="range" min="0" max="1" step="0.05" value="1" style="width: 90px; accent-color: var(--accent-gold); cursor: pointer;" oninput="document.getElementById('audioPlayer').volume = this.value" title="مستوى الصوت">
@@ -1147,7 +1158,10 @@
         <div class="form-group" style="margin-bottom:0; min-width:200px;">
           <select id="adhkarCategorySelect"></select>
         </div>
-        <div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button id="playCategoryAudioBtn" class="count-btn btn-gold" style="display: none;" title="استماع للقسم كاملاً">
+            ▶ استماع للقسم
+          </button>
           <button id="downloadAdhkarBtn" class="count-btn btn-gold" title="تحميل الأذكار المعروضة كملف نصي">
             📥 تحميل الأذكار
           </button>
@@ -1818,13 +1832,47 @@
       renderAdhkar();
     });
 
+    function getAudioUrl(path) {
+      if (!path) return '';
+      if (path.startsWith('http://') || path.startsWith('https://')) {
+        return path;
+      }
+      
+      const baseUrl = 'https://www.hisnmuslim.com';
+      let fixedPath = path.startsWith('/') ? path : '/' + path;
+      fixedPath = fixedPath.replace('/audio/', '/audio/ar/');
+      
+      return baseUrl + fixedPath;
+    }
+
     function renderAdhkar() {
       adhkarList.innerHTML = '';
       const selectedCatId = adhkarCategorySelect.value;
       const searchTerm = adhkarSearch.value.trim().toLowerCase();
+      
+      const playCatBtn = document.getElementById('playCategoryAudioBtn');
+      if (playCatBtn) playCatBtn.style.display = 'none';
 
       allAdhkar.forEach(cat => {
         if (selectedCatId !== 'ALL' && String(cat.id) !== String(selectedCatId)) return;
+
+        if (selectedCatId !== 'ALL' && cat.audio && playCatBtn) {
+          playCatBtn.style.display = 'flex';
+          const catAudioUrl = getAudioUrl(cat.audio);
+
+          playCatBtn.onclick = () => {
+            const audioPlayer = document.getElementById('audioPlayer');
+            
+            if (audioPlayer.src === catAudioUrl && !audioPlayer.paused) {
+              audioPlayer.pause();
+              playCatBtn.innerHTML = '▶ استماع للقسم';
+            } else {
+              audioPlayer.src = catAudioUrl;
+              audioPlayer.play();
+              playCatBtn.innerHTML = '⏸ إيقاف الاستماع';
+            }
+          };
+        }
 
         cat.array.forEach(item => {
           if (searchTerm && !item.text.toLowerCase().includes(searchTerm)) return;
@@ -1837,15 +1885,38 @@
 
           card.innerHTML = `
             <div class="dhikr-text">${item.text}</div>
-            <div class="dhikr-footer">
+            <div class="dhikr-footer" style="flex-wrap: wrap; gap: 10px;">
               <button class="count-btn">التكرار: <span class="counter-num">${count}</span></button>
-              <button class="dhikr-reset">إعادة ضبط</button>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                ${item.audio ? `<button class="dhikr-reset play-single-dhikr" style="color: var(--accent-gold); font-weight: bold; border: 1px solid var(--accent-gold); padding: 4px 10px; border-radius: 6px; cursor: pointer;">▶ استماع</button>` : ''}
+                <button class="dhikr-reset">إعادة ضبط</button>
+              </div>
             </div>
           `;
 
           const countBtn = card.querySelector('.count-btn');
           const counterNum = card.querySelector('.counter-num');
           const resetBtn = card.querySelector('.dhikr-reset');
+          const playSingleBtn = card.querySelector('.play-single-dhikr');
+
+          if (playSingleBtn && item.audio) {
+            const singleAudioUrl = getAudioUrl(item.audio);
+
+            playSingleBtn.addEventListener('click', () => {
+              const audioPlayer = document.getElementById('audioPlayer');
+
+              if (audioPlayer.src === singleAudioUrl && !audioPlayer.paused) {
+                audioPlayer.pause();
+                playSingleBtn.textContent = '▶ استماع';
+              } else {
+                audioPlayer.src = singleAudioUrl;
+                audioPlayer.play();
+                
+                document.querySelectorAll('.play-single-dhikr').forEach(btn => btn.textContent = '▶ استماع');
+                playSingleBtn.textContent = '⏸ إيقاف';
+              }
+            });
+          }
 
           countBtn.addEventListener('click', () => {
             if (count > 1) {
@@ -1873,6 +1944,7 @@
       });
     }
 
+          
     downloadAdhkarBtn.addEventListener('click', () => {
       const selectedCatId = adhkarCategorySelect.value;
       let textToDownload = "=== تطبيق الماهر - الأذكار والآداب ===\n\n";
@@ -2362,6 +2434,13 @@
         }
 
         audioPlayer.src = streamUrl;
+        
+        if (streamUrl.endsWith('.mp3')) {
+          audioPlayer.loop = true;
+        } else {
+          audioPlayer.loop = false;
+        }
+
         audioPlayer.play().then(() => {
           btn.textContent = '⏸ إيقاف البث';
           currentRadioBtn = btn;
