@@ -1,0 +1,52 @@
+[
+  {
+    "id": "classic_gold",
+    "name": "✨ الكلاسيكي الذهبي (أبيض x بني ذهبي)",
+    "bg": "#ffffff",
+    "textColor": "#111111",
+    "headerColor": "#8b4513",
+    "accentColor": "#d4af37",
+    "cardBg": "#fcf8f2",
+    "borderColor": "#e8d8b7"
+  },
+  {
+    "id": "royal_green",
+    "name": "🌿 الأخضر الملكي (الروضة الشريفة)",
+    "bg": "#ffffff",
+    "textColor": "#1b4332",
+    "headerColor": "#2d6a4f",
+    "accentColor": "#d4af37",
+    "cardBg": "#f4f9f5",
+    "borderColor": "#b7e4c7"
+  },
+  {
+    "id": "deep_navy",
+    "name": "🌌 الكحلي الروحاني (أزرق داكن x ذهبي)",
+    "bg": "#ffffff",
+    "textColor": "#0f172a",
+    "headerColor": "#1e3a8a",
+    "accentColor": "#b45309",
+    "cardBg": "#f8fafc",
+    "borderColor": "#cbd5e1"
+  },
+  {
+    "id": "burgundy_gold",
+    "name": "🍷 العنابي الملكي (عنابي x ذهبي)",
+    "bg": "#ffffff",
+    "textColor": "#3b0764",
+    "headerColor": "#701a75",
+    "accentColor": "#ca8a04",
+    "cardBg": "#fdf4ff",
+    "borderColor": "#f5d0fe"
+  },
+  {
+    "id": "emerald_dark",
+    "name": "📗 الزمردي الأنيق (زيتي x نحاسي)",
+    "bg": "#ffffff",
+    "textColor": "#14532d",
+    "headerColor": "#15803d",
+    "accentColor": "#b45309",
+    "cardBg": "#f0fdf4",
+    "borderColor": "#bbf7d0"
+  }
+]

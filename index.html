@@ -1097,9 +1097,24 @@
     <section id="quranTextTab" class="tab-content">
       <div class="card">
         <div class="card-title">المصحف </div>
-        <div class="form-group" style="max-width: 400px; margin: 0 auto 20px auto;">
-          <label>اختر السورة:</label>
-          <select id="textSurahSelect" class="input-control"></select>
+        <div style="max-width: 650px; margin: 0 auto 20px auto; background: var(--bg-secondary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+          <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+            <div style="flex: 2; min-width: 180px;">
+              <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 5px;">🔎 ابحث باسم السورة:</label>
+              <input type="text" id="surahTextSearchName" class="input-control" placeholder="مثال: الكهف، يس، الملك...">
+            </div>
+            <div style="flex: 1; min-width: 120px;">
+              <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 5px;">🔢 رقم السورة:</label>
+              <input type="number" id="surahTextSearchNum" class="input-control" placeholder="1 - 114" min="1" max="114">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 15px;">
+            <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 5px;">اختر السورة من القائمة:</label>
+            <select id="textSurahSelect" class="input-control"></select>
+          </div>
+          <button id="downloadSurahPdfBtn" class="count-btn btn-gold" style="width: 100%; justify-content: center; font-size: 0.95rem;">
+            📄 تحميل هذه السورة كملف (PDF)
+          </button>
         </div>
         
         <div class="quran-book-wrapper">
@@ -1450,7 +1465,41 @@
     </div>
   </div>
 
+  <div id="pdfOptionsModal" class="modal" style="z-index: 9999;">
+    <div class="modal-content" style="max-width: 450px; text-align: center;">
+      <div class="modal-header">
+        <h3 style="color: var(--accent-gold);">🎨 تخصيص ملف الـ PDF</h3>
+        <button class="close-modal" id="closePdfModalBtn">&times;</button>
+      </div>
+      
+      <div class="form-group" style="text-align: right;">
+        <label>حجم خط آيات القرآن:</label>
+        <select id="pdfFontSizeSelect" class="input-control">
+          <option value="20px">صغير (20px)</option>
+          <option value="24px" selected>متوسط - موصى به (24px)</option>
+          <option value="28px">كبير (28px)</option>
+          <option value="32px">كبير جداً (32px)</option>
+        </select>
+      </div>
 
+      <div class="form-group" style="text-align: right;">
+        <label>مظهر ولوحة ألوان السورة:</label>
+        <select id="pdfThemeSelect" class="input-control"></select>
+      </div>
+
+      <div class="form-group" style="text-align: right;">
+        <label>نطاق التحميل:</label>
+        <select id="pdfScopeSelect" class="input-control">
+          <option value="single">تحميل السورة الحالية فقط</option>
+          <option value="full">تحميل المصحف كاملاً (114 سورة بفاصل صفحات)</option>
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button id="confirmPdfDownloadBtn" class="count-btn btn-gold" style="flex: 1; justify-content: center;">📄 استخراج PDF</button>
+      </div>
+    </div>
+  </div>
   <audio id="audioPlayer"></audio>
 
   <div id="yt-hidden-player" style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; opacity: 0;"></div>
@@ -2422,8 +2471,38 @@
     });
 
     textSurahSelect.addEventListener('change', (e) => {
-      currentSurahName = surahNames[e.target.value - 1];
-      fetchSurahTextForBook(e.target.value);
+      const selectedVal = e.target.value;
+      currentSurahName = surahNames[selectedVal - 1];
+      
+      document.getElementById('surahTextSearchNum').value = selectedVal;
+      document.getElementById('surahTextSearchName').value = currentSurahName;
+      
+      fetchSurahTextForBook(selectedVal);
+    });
+    document.getElementById('surahTextSearchNum').addEventListener('input', (e) => {
+      let val = parseInt(e.target.value);
+      if (val >= 1 && val <= 114) {
+        textSurahSelect.value = val;
+        currentSurahName = surahNames[val - 1];
+        document.getElementById('surahTextSearchName').value = currentSurahName;
+        fetchSurahTextForBook(val);
+      }
+    });
+    document.getElementById('surahTextSearchName').addEventListener('input', (e) => {
+      const term = e.target.value.trim().toLowerCase();
+      if (!term) return;
+      
+      const foundIdx = surahNames.findIndex(name => name.toLowerCase().includes(term));
+      if (foundIdx !== -1) {
+        const surahNum = foundIdx + 1;
+        textSurahSelect.value = surahNum;
+        currentSurahName = surahNames[foundIdx];
+        document.getElementById('surahTextSearchNum').value = surahNum;
+        fetchSurahTextForBook(surahNum);
+      }
+    });
+    document.getElementById('downloadSurahPdfBtn').addEventListener('click', () => {
+      document.getElementById('pdfOptionsModal').classList.add('open');
     });
 
     function fetchSurahTextForBook(surahNum) {
@@ -2490,6 +2569,175 @@
 
     fetchSurahTextForBook(1);
 
+    let quranPdfThemes = [];
+    fetch('Assets/Data/quran-themes.json')
+      .then(res => res.json())
+      .then(data => {
+        quranPdfThemes = data;
+        const pdfThemeSelect = document.getElementById('pdfThemeSelect');
+        if (pdfThemeSelect) {
+          pdfThemeSelect.innerHTML = '';
+          quranPdfThemes.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.id;
+            opt.textContent = t.name;
+            pdfThemeSelect.appendChild(opt);
+          });
+        }
+      })
+      .catch(err => console.error('خطأ في تحميل ألوان القرآن:', err));
+
+    const pdfModal = document.getElementById('pdfOptionsModal');
+    document.getElementById('closePdfModalBtn').addEventListener('click', () => {
+      pdfModal.classList.remove('open');
+    });
+
+    document.getElementById('confirmPdfDownloadBtn').addEventListener('click', async () => {
+      pdfModal.classList.remove('open');
+
+      const fontSize = document.getElementById('pdfFontSizeSelect').value;
+      const selectedThemeId = document.getElementById('pdfThemeSelect').value;
+      const downloadScope = document.getElementById('pdfScopeSelect').value;
+      const theme = quranPdfThemes.find(t => t.id === selectedThemeId) || {
+        bg: "#ffffff", textColor: "#111111", headerColor: "#8b4513", accentColor: "#d4af37", cardBg: "#fcf8f2", borderColor: "#e8d8b7"
+      };
+
+      const loadingScreen = document.getElementById('loadingScreen');
+      const loadingText = loadingScreen.querySelector('p');
+      const originalLoadingText = loadingText.innerText;
+      loadingText.innerText = downloadScope === 'full' ? 'جاري تجهيز المصحف كاملاً كملف PDF...' : 'جاري تجهيز السورة...';
+      loadingScreen.style.display = 'flex';
+      loadingScreen.style.opacity = '1';
+
+      let htmlContent = `
+        <html dir="rtl" lang="ar">
+        <head>
+          <title>${downloadScope === 'full' ? 'القرآن الكريم كاملاً' : `سورة ${currentSurahName || surahNames[textSurahSelect.value - 1]}`}</title>
+          <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+          <style>
+            body {
+              font-family: 'Amiri', serif;
+              background-color: ${theme.bg};
+              color: ${theme.textColor};
+              padding: 20px;
+              line-height: 2.8;
+              font-size: ${fontSize};
+              text-align: justify;
+            }
+            .surah-wrapper {
+              background-color: ${theme.cardBg};
+              border: 4px double ${theme.borderColor};
+              padding: 40px;
+              border-radius: 15px;
+              margin-bottom: 20px;
+            }
+            .surah-title {
+              text-align: center;
+              color: ${theme.headerColor};
+              font-size: 2em;
+              font-weight: bold;
+              margin-bottom: 15px;
+              border-bottom: 2px dashed ${theme.accentColor};
+              padding-bottom: 10px;
+            }
+            .basmalah {
+              text-align: center;
+              color: ${theme.headerColor};
+              font-size: 1.5em;
+              margin-bottom: 20px;
+            }
+            .ayah-num {
+              color: ${theme.accentColor};
+              font-size: 0.85em;
+              margin: 0 5px;
+            }
+            .page-break {
+              page-break-before: always;
+            }
+          </style>
+        </head>
+        <body>
+      `;
+
+      try {
+        if (downloadScope === 'single') {
+
+          let surahNum = parseInt(textSurahSelect.value);
+          let surahTitle = surahNames[surahNum - 1];
+          
+          htmlContent += `<div class="surah-wrapper">`;
+          htmlContent += `<div class="surah-title">سورة ${surahTitle}</div>`;
+          
+          if (surahNum !== 9 && surahNum !== 1) {
+            htmlContent += `<div class="basmalah">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>`;
+          }
+
+          currentAyahsList.forEach(ayah => {
+            let text = ayah.text;
+            if (surahNum !== 1 && ayah.numberInSurah === 1) {
+              text = text.replace('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ', '').replace('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', '').trim();
+            }
+            htmlContent += `${text} <span class="ayah-num">﴿${ayah.numberInSurah}﴾</span> `;
+          });
+          htmlContent += `</div>`;
+
+        } else {
+          const res = await fetch('https://api.alquran.cloud/v1/quran/quran-uthmani');
+          const data = await res.json();
+         
+          htmlContent += data.data.surahs.map((surah, index) => {
+            let surahHtml = (index > 0) ? `<div class="page-break"></div>` : '';
+            surahHtml += `<div class="surah-wrapper">`;
+            surahHtml += `<div class="surah-title">${surah.name}</div>`;
+            
+            if (surah.number !== 9 && surah.number !== 1) {
+              surahHtml += `<div class="basmalah">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>`;
+            }
+
+            const ayahsHtml = surah.ayahs.map(ayah => {
+              let text = ayah.text;
+              if (surah.number !== 1 && ayah.numberInSurah === 1) {
+                text = text.replace('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ', '').replace('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', '').trim();
+              }
+              return `${text} <span class="ayah-num">﴿${ayah.numberInSurah}﴾</span> `;
+            }).join('');
+
+            surahHtml += ayahsHtml + `</div>`;
+            return surahHtml;
+          }).join('');
+        }
+
+        htmlContent += `</body></html>`;
+
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+        
+        printWindow.onload = function() {
+          const waitTime = downloadScope === 'full' ? 4000 : 1500;
+          
+          setTimeout(() => {
+            printWindow.print();
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+              loadingScreen.style.display = 'none';
+              loadingText.innerText = originalLoadingText;
+            }, 500);
+          }, waitTime); 
+        };
+
+      } catch (error) {
+        console.error('حدث خطأ أثناء التجهيز:', error);
+        alert('حدث خطأ أثناء إعداد الـ PDF. تأكد من اتصالك بالإنترنت.');
+        loadingScreen.style.opacity = '0';
+        setTimeout(() => {
+          loadingScreen.style.display = 'none';
+          loadingText.innerText = originalLoadingText;
+        }, 500);
+      }
+    });
+    document.getElementById('surahTextSearchNum').value = 1;
+    document.getElementById('surahTextSearchName').value = "الفاتحة";
 
     let qiblaBearing = 0;
 
@@ -2795,5 +3043,6 @@
   </script>
 <script src="youtube-radio.js"></script>
 <script src="quran_tracker.js"></script>
+
 </body>
 </html>
