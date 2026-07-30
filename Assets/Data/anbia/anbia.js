@@ -1,5 +1,3 @@
-
-
 document.addEventListener('DOMContentLoaded', () => {
     const style = document.createElement('style');
     style.innerHTML = `
@@ -23,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
             flex-direction: column;
             justify-content: space-between;
             min-height: 200px;
+            cursor: pointer;
         }
         .anbia-card::before {
             content: '';
@@ -39,20 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         .anbia-card:hover::before {
             opacity: 1;
-        }
-        .anbia-card.playing {
-            border-color: var(--accent-emerald);
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
-            animation: pulse-glow 2s infinite;
-        }
-        .anbia-card.playing::before {
-            background: var(--accent-emerald);
-            opacity: 1;
-        }
-        @keyframes pulse-glow {
-            0% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
-            50% { box-shadow: 0 0 25px rgba(16, 185, 129, 0.5); }
-            100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
         }
         .anbia-icon-bg {
             position: absolute;
@@ -96,21 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
             border-radius: 10px;
             font-size: 0.95rem;
             font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            pointer-events: none; /* عشان الضغطة تروح للكارت كله */
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-        }
-        .btn-anbia-play:hover {
-            background: var(--accent-gold);
-            color: #000;
-        }
-        .btn-anbia-play.active {
-            background: var(--accent-emerald);
-            color: #fff;
-            border-color: var(--accent-emerald);
         }
         .btn-anbia-share {
             background: #27272a;
@@ -120,10 +95,12 @@ document.addEventListener('DOMContentLoaded', () => {
             border-radius: 10px;
             cursor: pointer;
             transition: 0.3s;
+            z-index: 5;
         }
-        .btn-anbia-share:hover {
-            background: #3f3f46;
-        }
+        .btn-anbia-share:hover { background: #3f3f46; }
+        
+        #anbiaModalPlayBtn:hover { transform: scale(1.1); }
+        #anbiaModalPlayBtn:active { transform: scale(0.95); }
     `;
     document.head.appendChild(style);
 
@@ -143,18 +120,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
     function renderAnbiaCards(stories) {
-        anbiaGrid.innerHTML = ''; // تفريغ الشبكة الأول
-
+        anbiaGrid.innerHTML = ''; 
         if (stories.length === 0) {
             anbiaGrid.innerHTML = '<p style="color: #aaa; text-align: center; width: 100%; grid-column: 1/-1;">مفيش نتايج مطابقة لبحثك 😔</p>';
             return;
         }
 
-        stories.forEach((story, index) => {
+        stories.forEach(story => {
             const card = document.createElement('div');
             card.className = 'anbia-card';
-            card.id = `anbia-card-${story.id}`;
-            
             card.innerHTML = `
                 <div class="anbia-icon-bg">✨</div>
                 <div class="anbia-title-wrapper">
@@ -162,88 +136,112 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p class="anbia-subtitle">عليه السلام</p>
                 </div>
                 <div class="anbia-actions">
-                    <button class="btn-anbia-play play-anbia-btn" data-url="${story.audio}" data-title="${story.title}" data-id="${story.id}">
-                        <span class="icon">▶</span> <span class="text">استماع</span>
+                    <button class="btn-anbia-play">
+                        <span class="icon">🎙️</span> <span class="text">فتح القصة</span>
                     </button>
-                    <button class="btn-anbia-share copy-anbia-link" data-url="${story.audio}" title="نسخ رابط القصة">
-                        🔗
-                    </button>
+                    <button class="btn-anbia-share copy-anbia-link" data-url="${story.audio}" title="نسخ رابط القصة">🔗</button>
                 </div>
             `;
-            anbiaGrid.appendChild(card);
-        });
 
-        attachAnbiaEvents(); 
-    }
+            card.addEventListener('click', () => {
+                openAnbiaPlayer(story.title, story.audio);
+            });
 
-    function attachAnbiaEvents() {
-        const audioPlayer = document.getElementById('audioPlayer');
-
-        document.querySelectorAll('.copy-anbia-link').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            card.querySelector('.copy-anbia-link').addEventListener('click', (e) => {
+                e.stopPropagation();
                 const link = e.currentTarget.dataset.url;
                 navigator.clipboard.writeText(link);
                 const originalText = e.currentTarget.innerHTML;
                 e.currentTarget.innerHTML = '✔';
                 setTimeout(() => e.currentTarget.innerHTML = originalText, 1500);
             });
-        });
 
-        document.querySelectorAll('.play-anbia-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const currentBtn = e.currentTarget;
-                const url = currentBtn.dataset.url;
-                const title = currentBtn.dataset.title;
-                const id = currentBtn.dataset.id;
-
-                if (audioPlayer.src === url && !audioPlayer.paused) {
-                    audioPlayer.pause();
-                    resetAllAnbiaCards();
-                } else {
-                    resetAllAnbiaCards();
-                    
-                    audioPlayer.src = url;
-                    audioPlayer.play();
-                    
-                    const activeCard = document.getElementById(`anbia-card-${id}`);
-                    if (activeCard) activeCard.classList.add('playing');
-                    
-                    currentBtn.classList.add('active');
-                    currentBtn.querySelector('.icon').textContent = '⏸';
-                    currentBtn.querySelector('.text').textContent = 'إيقاف';
-                    
-                    const displaySurahName = document.getElementById('displaySurahName');
-                    const displayReciterName = document.getElementById('displayReciterName');
-                    const displayMoshafName = document.getElementById('displayMoshafName');
-                    
-                    if(displaySurahName) displaySurahName.textContent = `قصة ${title}`;
-                    if(displayReciterName) displayReciterName.textContent = 'قصص الأنبياء';
-                    if(displayMoshafName) displayMoshafName.textContent = 'تسجيل صوتي';
-                }
-            });
+            anbiaGrid.appendChild(card);
         });
     }
 
-    function resetAllAnbiaCards() {
-        document.querySelectorAll('.anbia-card').forEach(card => card.classList.remove('playing'));
-        document.querySelectorAll('.play-anbia-btn').forEach(btn => {
-            btn.classList.remove('active');
-            btn.querySelector('.icon').textContent = '▶';
-            btn.querySelector('.text').textContent = 'استماع';
-        });
+    const modal = document.getElementById('anbiaAudioModal');
+    const closeModalBtn = document.getElementById('closeAnbiaModal');
+    const modalTitle = document.getElementById('anbiaModalTitle');
+    const modalAudio = document.getElementById('anbiaModalAudio');
+    const modalPlayBtn = document.getElementById('anbiaModalPlayBtn');
+    const seekbar = document.getElementById('anbiaSeekbar');
+    const currentTimeEl = document.getElementById('anbiaCurrentTime');
+    const durationTimeEl = document.getElementById('anbiaDurationTime');
+    const speedControl = document.getElementById('anbiaSpeedControl');
+    const downloadBtn = document.getElementById('anbiaModalDownloadBtn');
+    const globalAudioPlayer = document.getElementById('audioPlayer'); // المشغل الرئيسي بتاع السور
+
+    function openAnbiaPlayer(title, audioUrl) {
+        if(globalAudioPlayer && !globalAudioPlayer.paused) {
+            globalAudioPlayer.pause();
+        }
+
+        modalTitle.textContent = `قصة سيدنا ${title}`;
+        modalAudio.src = audioUrl;
+        downloadBtn.href = audioUrl;
+        downloadBtn.download = `قصة_سيدنا_${title}.mp3`;
+        
+        seekbar.value = 0;
+        speedControl.value = "1";
+        modalAudio.playbackRate = 1;
+        currentTimeEl.textContent = "00:00";
+        durationTimeEl.textContent = "00:00";
+
+        modal.classList.add('open');
+        modalAudio.play();
+        modalPlayBtn.innerHTML = '⏸';
     }
 
-    const audioPlayer = document.getElementById('audioPlayer');
-    if(audioPlayer) {
-        audioPlayer.addEventListener('pause', () => {
+    modalPlayBtn.addEventListener('click', () => {
+        if (modalAudio.paused) {
+            modalAudio.play();
+            modalPlayBtn.innerHTML = '⏸';
+        } else {
+            modalAudio.pause();
+            modalPlayBtn.innerHTML = '▶';
+        }
+    });
 
-            document.querySelectorAll('.play-anbia-btn.active').forEach(btn => {
-                btn.classList.remove('active');
-                btn.querySelector('.icon').textContent = '▶';
-                btn.querySelector('.text').textContent = 'استماع';
-            });
-            document.querySelectorAll('.anbia-card.playing').forEach(card => card.classList.remove('playing'));
-        });
+    modalAudio.addEventListener('timeupdate', () => {
+        if (modalAudio.duration) {
+            const progress = (modalAudio.currentTime / modalAudio.duration) * 100;
+            seekbar.value = progress;
+            currentTimeEl.textContent = formatTime(modalAudio.currentTime);
+            durationTimeEl.textContent = formatTime(modalAudio.duration);
+        }
+    });
+
+    seekbar.addEventListener('input', (e) => {
+        if (modalAudio.duration) {
+            const seekTo = modalAudio.duration * (e.target.value / 100);
+            modalAudio.currentTime = seekTo;
+        }
+    });
+
+    speedControl.addEventListener('change', (e) => {
+        modalAudio.playbackRate = parseFloat(e.target.value);
+    });
+
+    function closePlayer() {
+        modal.classList.remove('open');
+        modalAudio.pause();
+        modalAudio.src = ""; // تفريغ الصوت
+    }
+
+    closeModalBtn.addEventListener('click', closePlayer);
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closePlayer();
+        }
+    });
+
+    function formatTime(sec) {
+        if (isNaN(sec)) return "00:00";
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
 
     searchInput.addEventListener('input', (e) => {
@@ -252,7 +250,6 @@ document.addEventListener('DOMContentLoaded', () => {
             renderAnbiaCards(allStories); 
             return;
         }
-        
         const filtered = allStories.filter(story => 
             story.title.toLowerCase().includes(term)
         );
