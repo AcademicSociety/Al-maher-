@@ -64,6 +64,7 @@
       <button class="nav-tab" data-tab="prayer">مواقيت الصلاة والقبلة</button>
       <button class="nav-tab" data-tab="events">المناسبات الإسلامية</button>
       <button class="nav-tab" data-tab="podcast">البودكاست</button>
+      <button class="nav-tab" data-tab="anbia">قصص الأنبياء</button>
       </nav>
 
     <button class="nav-arrow" id="navScrollLeft" title="التمرير لليسار">⬅</button>
@@ -533,6 +534,21 @@
           </div>
         </div>
       </div>
+    </section>
+
+    <section id="anbiaTab" class="tab-content">
+      <div class="card" style="text-align: center; margin-bottom: 20px; background: linear-gradient(135deg, var(--bg-secondary), #131c2d); border: 1px solid var(--accent-gold); position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -50px; right: -50px; font-size: 8rem; opacity: 0.03;">🕌</div>
+        <h2 style="color: var(--accent-gold); font-size: 1.8rem; margin-bottom: 10px; text-shadow: 0 0 15px rgba(212, 175, 55, 0.4); position: relative; z-index: 1;">📜 قصص الأنبياء</h2>
+        <p style="color: var(--text-muted); position: relative; z-index: 1;">استمع لأجمل القصص النبوية بأسلوب ممتع وشيق</p>
+      </div>
+
+      <div class="form-group search-container">
+        <input type="text" id="anbiaSearch" class="input-control" placeholder="🔍 ابحث عن قصة نبي (مثال: يوسف، موسى)..." style="background-color: var(--bg-secondary); color: var(--text-main); border-color: var(--border-color); border-radius: 12px; padding: 12px 15px;">
+      </div>
+
+      <div id="anbiaGrid" class="anbia-premium-grid">
+        </div>
     </section>
 
   </main>
@@ -2179,5 +2195,6 @@
 <script src="youtube-radio.js"></script>
 <script src="quran_tracker.js"></script>
 <script src="podcast.js"></script>
+<script src="Assets/Data/anbia/anbia.js"></script>
 </body>
 </html>

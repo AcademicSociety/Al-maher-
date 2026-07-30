@@ -1,0 +1,12 @@
+[
+  { "id": 1, "title": "آدم", "audio": "https://res.cloudinary.com/zxau2x77/video/upload/v1785442597/01_elmbfv.mp3" },
+  { "id": 2, "title": "نوح", "audio": "https://res.cloudinary.com/zxau2x77/video/upload/v1785442553/02_ghvnrz.mp3" },
+  { "id": 3, "title": "هود وصالح", "audio": "https://res.cloudinary.com/zxau2x77/video/upload/v1785442547/03_hksjno.mp3" },
+  { "id": 4, "title": "ابراهيم", "audio": "https://res.cloudinary.com/zxau2x77/video/upload/v1785442601/04_zflcex.mp3" },
+  { "id": 5, "title": "لوط واسماعيل وشعيب واسحق", "audio": "https://res.cloudinary.com/zxau2x77/video/upload/v1785442516/05_tacesy.mp3" },
+  { "id": 6, "title": "يوسف", "audio": "https://res.cloudinary.com/zxau2x77/video/upload/v1785442471/06_ycduer.mp3" },
+  { "id": 7, "title": "ايوب وموسي ويونس", "audio": "https://res.cloudinary.com/zxau2x77/video/upload/v1785442634/07_xukypx.mp3" },
+  { "id": 8, "title": "بقيه قصه موسي", "audio": "https://res.cloudinary.com/zxau2x77/video/upload/v1785442650/08_ilrtie.mp3" },
+  { "id": 9, "title": "يوشع وذكريا وداوود وسليمان", "audio": "https://res.cloudinary.com/zxau2x77/video/upload/v1785442650/09_fcj1ag.mp3" },
+  { "id": 10, "title": "عيسي", "audio": "https://res.cloudinary.com/zxau2x77/video/upload/v1785442664/10_jg4oq1.mp3" }
+]
