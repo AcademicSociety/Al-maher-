@@ -7,10 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #262626; /* لون السبحة الأساسي (أسود/رصاصي غامق) */
-            --accent-color: #404040;  /* درجة أفتح للتدريج */
-            --bg-color: #000000;      /* لون خلفية الصفحة الأساسي (أسود) */
-            --card-bg: rgba(25, 25, 25, 0.85); /* كارت زجاجي غامق */
+            --primary-color: #262626; 
+            --accent-color: #404040; 
+            --bg-color: #000000;      
+            --card-bg: rgba(25, 25, 25, 0.85); 
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
         }
@@ -26,8 +26,6 @@
             transition: background-color 0.4s ease;
             color: var(--text-main);
         }
-
-        /* لوحة التحكم في الألوان */
         .color-settings {
             position: fixed;
             top: 20px;
@@ -46,8 +44,6 @@
         .picker-group { display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .color-settings label { font-size: 0.8rem; font-weight: bold; color: var(--text-main); margin: 0; }
         .color-settings input[type="color"] { cursor: pointer; border: none; width: 35px; height: 35px; border-radius: 50%; padding: 0; background: none; }
-
-        /* جسم السبحة */
         .tasbih-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
@@ -63,8 +59,6 @@
         }
 
         h1 { font-size: 1.5rem; color: var(--text-main); margin-top: 0; margin-bottom: 25px; font-weight: 800; }
-
-        /* القائمة المنسدلة */
         select {
             width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
             background: rgba(0, 0, 0, 0.5); font-family: 'Tajawal'; font-weight: bold; margin-bottom: 25px;
@@ -72,8 +66,6 @@
         }
         select:focus { border-color: var(--text-muted); }
         select option { background: #1e293b; color: white; }
-
-        /* شاشة العداد */
         .display-screen {
             background: linear-gradient(145deg, #020617, #0f172a);
             color: #22d3ee;
@@ -87,8 +79,6 @@
 
         .counter-val { font-size: 4.5rem; font-weight: 800; margin: 0; text-shadow: 0 0 15px rgba(34, 211, 238, 0.5); line-height: 1; }
         .total-info { font-size: 0.85rem; color: var(--text-muted); margin-top: 15px; background: rgba(0,0,0,0.4); padding: 5px 12px; border-radius: 8px; display: inline-block; }
-
-        /* الزرار الرئيسي */
         .main-button {
             width: 140px; height: 140px; border-radius: 50%;
             background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
@@ -107,16 +97,12 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.3), 
                         inset 0 8px 20px rgba(0,0,0,0.6); 
         }
-
-        /* زر التصفير */
         .reset-link { 
             display: inline-block; margin-top: 25px; padding: 8px 20px; border-radius: 20px;
             background: rgba(239, 68, 68, 0.1); color: #f87171; cursor: pointer; font-size: 0.9rem; font-weight: bold; 
             transition: 0.3s; border: 1px solid rgba(239, 68, 68, 0.2);
         }
         .reset-link:hover { background: rgba(239, 68, 68, 0.2); }
-
-        /* التحديات */
         .side-challenges {
             position: fixed; bottom: 30px; left: 30px; 
             background: var(--card-bg); backdrop-filter: blur(15px); 
@@ -218,7 +204,6 @@
             const titles = ["بداية الخير", "الذاكر المجتهد", "أعانك الله"];
             dailyGoals.forEach((goal, i) => {
                 const percent = Math.min((dailyCount / goal) * 100, 100);
-                // تغيير لون شريط التقدم عشان يليق مع أي لون تختاره
                 container.innerHTML += `
                     <div>
                         <div class="goal-label"><span>${titles[i]}</span> <span>${dailyCount} / ${goal}</span></div>
@@ -236,16 +221,13 @@
             if (navigator.vibrate) navigator.vibrate(40);
         });
 
-        // تحكم في لون خلفية الصفحة بالكامل
         document.getElementById('bgPicker').addEventListener('input', (e) => {
             document.documentElement.style.setProperty('--bg-color', e.target.value);
         });
 
-        // تحكم في لون الزرار والتفاصيل (السبحة)
         document.getElementById('colorPicker').addEventListener('input', (e) => {
             const color = e.target.value;
             document.documentElement.style.setProperty('--primary-color', color);
-            // تغميق اللون شوية للتدريج عشان الزرار يفضل مجسم
             document.documentElement.style.setProperty('--accent-color', color + 'cc'); 
         });
 

@@ -25,7 +25,7 @@ function onYouTubeIframeAPIReady() {
 
 function toggleYtAudio() {
     const btn = document.getElementById('ytSunnahBtn');
-    const mainAudioPlayer = document.getElementById('audioPlayer'); // لسحب مشغل الصوت الأساسي في موقعك
+    const mainAudioPlayer = document.getElementById('audioPlayer'); 
 
     if (!ytPlayer || typeof ytPlayer.getPlayerState !== 'function') {
         alert("جاري الاتصال بالبث، يرجى الانتظار لحظة والمحاولة...");
