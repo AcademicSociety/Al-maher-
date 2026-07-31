@@ -66,8 +66,10 @@
 
     <nav class="main-nav" id="mainNav">
       <button class="nav-tab active" data-tab="quran">القرآن الكريم (استماع)</button>
-      <button class="nav-tab" data-tab="quranText">المصحف المقروء</button>
+      <button class="nav-tab" data-tab="quranText">المصحف </button>
       <button class="nav-tab" data-tab="radio">إذاعة القرآن</button>
+      <button class="nav-tab" data-tab="tafsir">تفسير الشعراوي</button>
+      <button class="nav-tab" data-tab="mushafTafsir"> <i class="fas fa-book-open"></i> <span>تفسير المصحف</span> </button>
       <button class="nav-tab" data-tab="download">تحميل القرآن الكريم</button>
       <button class="nav-tab" data-tab="downloadAdhkar">تحميل الأذكار</button>
       <button class="nav-tab" data-tab="adhkar">الأذكار والآداب</button>
@@ -76,6 +78,7 @@
       <button class="nav-tab" data-tab="events">المناسبات الإسلامية</button>
       <button class="nav-tab" data-tab="podcast">البودكاست</button>
       <button class="nav-tab" data-tab="anbia">قصص الأنبياء</button>
+
       </nav>
 
     <button class="nav-arrow" id="navScrollLeft" title="التمرير لليسار">⬅</button>
@@ -611,6 +614,73 @@
         </div>
       </div>
     </div>
+
+    <section id="tafsirTab" class="tab-content">
+      <div class="card" style="text-align: center; margin-bottom: 20px; background: linear-gradient(135deg, var(--bg-secondary), #131c2d); border: 1px solid var(--accent-gold); position: relative; overflow: hidden;">
+        <h2 style="color: var(--accent-gold); font-size: 1.8rem; margin-bottom: 10px; position: relative; z-index: 1;"> تفسير الشيخ الشعراوي</h2>
+        <p style="color: var(--text-muted); position: relative; z-index: 1;">استمع لتفسير القرآن الكريم كاملاً بث مباشر دون استهلاك مساحة جهازك</p>
+      </div>
+
+      <div class="form-group search-container">
+        <input type="text" id="tafsirSearch" class="input-control" placeholder="🔍 ابحث عن السورة أو الحلقة (مثال: الفاتحة، البقرة)..." style="background-color: var(--bg-secondary); color: var(--text-main); border-color: var(--border-color); border-radius: 12px; padding: 12px 15px;">
+      </div>
+
+      <div id="tafsirGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 20px;">
+      </div>
+    </section>
+
+    <section id="mushafTafsirTab" class="tab-content">
+      <div class="card">
+        <div class="section-header" style="text-align: center; margin-bottom: 20px;">
+          <h2 style="color: var(--accent-gold);"><i class="fas fa-book-open"></i> تفسير القرآن الكريم</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            (التفسير الميسر - معتمد من 
+            <a href="https://quran.ksu.edu.sa/" target="_blank" style="color: var(--accent-gold); text-decoration: underline;">مجمع الملك فهد / جامعة الملك سعود</a>)
+          </p>
+        </div>
+
+        <div class="tafsir-search-box" style="background: var(--bg-secondary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center;">
+          
+          <div style="flex: 1; min-width: 140px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-muted);">نطاق التفسير:</label>
+            <select id="textTafsirModeSelect" class="input-control" style="width: 100%;">
+              <option value="ayah">آية معينة</option>
+              <option value="surah">السورة كاملة</option>
+            </select>
+          </div>
+
+          <div style="flex: 1; min-width: 150px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-muted);">السورة:</label>
+            <select id="textTafsirSurahSelect" class="input-control" style="width: 100%;"></select>
+          </div>
+
+          <div id="ayahInputGroup" style="flex: 1; min-width: 100px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-muted);">رقم الآية:</label>
+            <input type="number" id="textTafsirAyahInput" class="input-control" value="1" min="1" style="width: 100%;" placeholder="أدخل رقم الآية">
+          </div>
+
+          <div style="align-self: flex-end; width: 100%; max-width: 120px;">
+            <button id="fetchTafsirBtn" class="count-btn btn-gold" style="width: 100%; justify-content: center; height: 46px;">
+              عرض التفسير
+            </button>
+          </div>
+        </div>
+
+        <div id="tafsirDownloadActions" style="display: none; margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+          <button id="downloadTafsirTxt" class="count-btn" style="background: #10b981; color: #fff; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer;">
+            <i class="fas fa-file-alt"></i> تحميل TXT
+          </button>
+          <button id="downloadTafsirJson" class="count-btn" style="background: #3b82f6; color: #fff; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer;">
+            <i class="fas fa-file-code"></i> تحميل JSON
+          </button>
+          <button id="downloadTafsirPdf" class="count-btn" style="background: #ef4444; color: #fff; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer;">
+            <i class="fas fa-file-pdf"></i> تحميل PDF (طباعة)
+          </button>
+        </div>
+
+        <div id="tafsirResultContainer" style="margin-top: 20px;"></div>
+      </div>
+    </section>
 
   </main>
 
@@ -2250,6 +2320,437 @@
         localStorage.setItem('theme', 'dark');
         themeToggleBtn.textContent = '☀️'; 
       }
+    });
+
+    const tafsirSearch = document.getElementById('tafsirSearch');
+    const tafsirGrid = document.getElementById('tafsirGrid');
+    let allTafsirFiles = [];
+    const archiveTafsirId = 'Khwater.El-Sharawy.Fi.Tafsir.EL-Quran-Karim-Up_ReDa_MoHamMeD';
+
+    async function fetchTafsirShaarawy() {
+      if (!tafsirGrid) return;
+      tafsirGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--accent-gold); font-weight:bold;">بسم الله.. جاري جلب الحلقات، يرجى الانتظار...</p>';
+      
+      try {
+        const res = await fetch(`https://archive.org/metadata/${archiveTafsirId}`);
+        const data = await res.json();
+        
+        allTafsirFiles = data.files.filter(f => f.name.endsWith('.mp3'));
+        allTafsirFiles.sort((a, b) => a.name.localeCompare(b.name));
+        renderTafsirList(allTafsirFiles);
+      } catch (error) {
+        console.error(error);
+        tafsirGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#ef4444;">حدث خطأ أثناء الاتصال. تأكد من الإنترنت.</p>';
+      }
+    }
+
+    function renderTafsirList(files) {
+      tafsirGrid.innerHTML = '';
+      if (files.length === 0) {
+        tafsirGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-muted);">لا توجد نتائج مطابقة للبحث.</p>';
+        return;
+      }
+
+      const groupedFiles = {};
+
+      files.forEach(file => {
+        let rawName = decodeURIComponent(file.name).replace('.mp3', '');
+        const url = `https://archive.org/download/${archiveTafsirId}/${encodeURIComponent(file.name)}`;
+        
+        let surahTitle = "ملفات أخرى";
+        let episodeTitle = rawName;
+
+        if (rawName.startsWith('000_Intro')) {
+            surahTitle = "مقدمات التفسير";
+            episodeTitle = "المقدمة رقم " + rawName.replace(/\D/g, '');
+        } 
+        else {
+            let surahMatch = rawName.match(/^(\d{3})/);
+            if(surahMatch) {
+                let surahNum = parseInt(surahMatch[1]);
+                if(surahNum > 0 && surahNum <= 114) {
+                    surahTitle = "سورة " + surahNames[surahNum - 1];
+                }
+            } else if (rawName.includes('Baqarah')) { 
+                surahTitle = "سورة البقرة";
+            }
+
+            let ayahsMatch = rawName.match(/\((\d+)_(\d+)\)/);
+            if (ayahsMatch) {
+                let from = parseInt(ayahsMatch[1]);
+                let to = parseInt(ayahsMatch[2]);
+                episodeTitle = from === to ? `تفسير الآية (${from})` : `تفسير الآيات من (${from}) إلى (${to})`;
+            } else {
+                let partMatch = rawName.match(/_(\d{3})$/);
+                if (partMatch) {
+                    episodeTitle = `الجزء ${parseInt(partMatch[1])}`;
+                } else {
+                    episodeTitle = rawName.replace(/[_.-]/g, ' '); 
+                }
+            }
+        }
+
+        if(!groupedFiles[surahTitle]) groupedFiles[surahTitle] = [];
+        groupedFiles[surahTitle].push({ title: episodeTitle, url: url, originalName: rawName });
+      });
+
+      for (const [surah, episodes] of Object.entries(groupedFiles)) {
+        const card = document.createElement('div');
+        card.className = 'radio-card';
+        card.style.display = 'flex';
+        card.style.flexDirection = 'column';
+        card.style.gap = '15px';
+        
+        let episodesHtml = '';
+        episodes.forEach((ep) => {
+            episodesHtml += `
+            <div style="background: var(--bg-primary); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="color: var(--text-main); margin-bottom: 12px; font-weight: bold; font-size: 0.95rem;">${ep.title}</div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+                    <button class="count-btn btn-gold play-tafsir-btn" data-url="${ep.url}" data-title="${surah} - ${ep.title}" style="flex: 1; min-width: 120px; justify-content: center; padding: 8px;">▶ تشغيل</button>
+                    <a href="${ep.url}" download="${surah} - ${ep.title}.mp3" target="_blank" class="count-btn" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 15px; text-decoration: none;">⬇ تحميل</a>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 12px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
+                    <span style="font-size: 0.85rem; color: var(--text-muted);">🔊 الصوت</span>
+                    <input type="range" class="tafsir-volume" min="0" max="1" step="0.05" value="1" style="flex: 1; accent-color: var(--accent-gold); cursor: pointer;" title="مستوى الصوت">
+                </div>
+            </div>`;
+        });
+
+        card.innerHTML = `
+          <h3 style="color: var(--accent-gold); font-size: 1.3rem; border-bottom: 2px solid var(--accent-gold); padding-bottom: 10px; text-align: center;">${surah}</h3>
+          <div style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 5px;">
+            ${episodesHtml}
+          </div>
+        `;
+        tafsirGrid.appendChild(card);
+      }
+
+      document.querySelectorAll('.play-tafsir-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const audioUrl = this.dataset.url;
+          const titleName = this.dataset.title;
+ 
+          if (audioPlayer.getAttribute('data-current-url') === audioUrl) {
+            if (!audioPlayer.paused) {
+
+                audioPlayer.pause();
+                this.innerHTML = '▶ تشغيل';
+            } else {
+                audioPlayer.play();
+                this.innerHTML = '⏸ إيقاف';
+            }
+          } else {
+            document.querySelectorAll('.play-tafsir-btn').forEach(b => b.innerHTML = '▶ تشغيل');
+            audioPlayer.src = audioUrl;
+            audioPlayer.setAttribute('data-current-url', audioUrl);
+            audioPlayer.play();
+            this.innerHTML = '⏸ إيقاف';
+            
+            if(displaySurahName) displaySurahName.textContent = titleName;
+            if(displayReciterName) displayReciterName.textContent = 'الشيخ محمد متولي الشعراوي';
+            if(displayMoshafName) displayMoshafName.textContent = 'خواطر وتفسير القرآن الكريم';
+          }
+        });
+      });
+
+      document.querySelectorAll('.tafsir-volume').forEach(slider => {
+          slider.addEventListener('input', function(e) {
+              audioPlayer.volume = e.target.value;
+          });
+      });
+    }
+
+    tafsirSearch.addEventListener('input', (e) => {
+      const term = e.target.value.trim().toLowerCase();
+      if (!term) {
+        renderTafsirList(allTafsirFiles);
+        return;
+      }
+      
+      const filtered = allTafsirFiles.filter(file => {
+        let rawName = decodeURIComponent(file.name).replace('.mp3', '');
+        let surahTitle = "ملفات أخرى";
+        let episodeTitle = rawName;
+
+        if (rawName.startsWith('000_Intro')) {
+            surahTitle = "مقدمات التفسير";
+            episodeTitle = "المقدمة رقم " + rawName.replace(/\D/g, '');
+        } 
+        else {
+            let surahMatch = rawName.match(/^(\d{3})/);
+            if(surahMatch) {
+                let surahNum = parseInt(surahMatch[1]);
+                if(surahNum > 0 && surahNum <= 114) {
+                    surahTitle = "سورة " + surahNames[surahNum - 1];
+                }
+            } else if (rawName.includes('Baqarah')) { 
+                surahTitle = "سورة البقرة";
+            }
+
+            let ayahsMatch = rawName.match(/\((\d+)_(\d+)\)/);
+            if (ayahsMatch) {
+                let from = parseInt(ayahsMatch[1]);
+                let to = parseInt(ayahsMatch[2]);
+                episodeTitle = from === to ? `تفسير الآية (${from})` : `تفسير الآيات من (${from}) إلى (${to})`;
+            } else {
+                let partMatch = rawName.match(/_(\d{3})$/);
+                if (partMatch) {
+                    episodeTitle = `الجزء ${parseInt(partMatch[1])}`;
+                } else {
+                    episodeTitle = rawName.replace(/[_.-]/g, ' '); 
+                }
+            }
+        }
+        
+        return surahTitle.includes(term) || episodeTitle.includes(term) || rawName.toLowerCase().includes(term);
+      });
+      
+      renderTafsirList(filtered);
+    });
+
+    fetchTafsirShaarawy();
+
+    const textTafsirSelect = document.getElementById('textTafsirSurahSelect');
+    const textTafsirModeSelect = document.getElementById('textTafsirModeSelect');
+    const ayahInputGroup = document.getElementById('ayahInputGroup');
+    const tafsirDownloadActions = document.getElementById('tafsirDownloadActions');
+
+    let currentTafsirDataForExport = null; 
+
+    if (textTafsirSelect && typeof surahNames !== 'undefined') {
+      surahNames.forEach((name, index) => {
+        const opt = document.createElement('option');
+        opt.value = index + 1;
+        opt.textContent = `${index + 1}. سورة ${name}`;
+        textTafsirSelect.appendChild(opt);
+      });
+    }
+
+    if (textTafsirModeSelect && ayahInputGroup) {
+      textTafsirModeSelect.addEventListener('change', () => {
+        if (textTafsirModeSelect.value === 'surah') {
+          ayahInputGroup.style.display = 'none';
+        } else {
+          ayahInputGroup.style.display = 'block';
+        }
+      });
+    }
+
+    async function getAyahTafsir() {
+      const mode = document.getElementById('textTafsirModeSelect').value;
+      const surahNum = document.getElementById('textTafsirSurahSelect').value;
+      const container = document.getElementById('tafsirResultContainer');
+      const surahName = surahNames[surahNum - 1];
+      
+      if(tafsirDownloadActions) tafsirDownloadActions.style.display = 'none';
+
+      if (mode === 'ayah') {
+        const ayahNum = document.getElementById('textTafsirAyahInput').value;
+        if (!ayahNum || ayahNum < 1) {
+          container.innerHTML = '<p style="color:#ef4444; text-align:center;">يرجى إدخال رقم آية صحيح.</p>';
+          return;
+        }
+
+        container.innerHTML = '<p style="text-align:center; color:var(--accent-gold);">جاري جلب الآية والتفسير الميسر...</p>';
+
+        try {
+          const response = await fetch(`https://api.alquran.cloud/v1/ayah/${surahNum}:${ayahNum}/editions/quran-simple,ar.muyassar`);
+          const data = await response.json();
+
+          if (data.code === 200 && data.data) {
+            const quranText = data.data[0].text;
+            const tafsirText = data.data[1].text;
+
+            currentTafsirDataForExport = {
+              type: 'ayah',
+              surah: surahName,
+              surahNum: surahNum,
+              ayahNum: ayahNum,
+              quranText: quranText,
+              tafsirText: tafsirText,
+              source: 'التفسير الميسر - مجمع الملك فهد'
+            };
+
+            container.innerHTML = `
+              <div style="background: var(--bg-secondary); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                <h3 style="color: var(--accent-gold); text-align: center; margin-bottom: 15px;">
+                  سورة ${surahName} - الآية (${ayahNum})
+                </h3>
+                
+                <div style="font-size: 1.3rem; line-height: 2; text-align: center; background: var(--bg-primary); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; font-family: 'Amiri', serif;">
+                  ﴿ ${quranText} ﴾
+                </div>
+
+                <div style="border-top: 1px dashed var(--border-color); padding-top: 15px;">
+                  <h4 style="color: var(--text-main); margin-bottom: 8px;"><i class="fas fa-comment-alt"></i> التفسير الميسر:</h4>
+                  <p style="line-height: 1.8; color: var(--text-muted); font-size: 1.05rem; text-align: justify;">
+                    ${tafsirText}
+                  </p>
+                </div>
+              </div>
+            `;
+            if(tafsirDownloadActions) tafsirDownloadActions.style.display = 'flex';
+          } else {
+            container.innerHTML = '<p style="color:#ef4444; text-align:center;">عذراً، هذه الآية غير موجودة في هذه السورة.</p>';
+          }
+        } catch (error) {
+          container.innerHTML = '<p style="color:#ef4444; text-align:center;">حدث خطأ أثناء جلب التفسير. تأكد من الإنترنت.</p>';
+        }
+      } else {
+        container.innerHTML = '<p style="text-align:center; color:var(--accent-gold);">جاري جلب تفسير السورة بالكامل...</p>';
+
+        try {
+          const response = await fetch(`https://api.alquran.cloud/v1/surah/${surahNum}/editions/quran-simple,ar.muyassar`);
+          const data = await response.json();
+
+          if (data.code === 200 && data.data) {
+            const quranAyahs = data.data[0].ayahs;
+            const tafsirAyahs = data.data[1].ayahs;
+
+            currentTafsirDataForExport = {
+              type: 'surah',
+              surah: surahName,
+              surahNum: surahNum,
+              ayahs: quranAyahs.map((a, i) => ({
+                number: a.numberInSurah,
+                text: a.text,
+                tafsir: tafsirAyahs[i] ? tafsirAyahs[i].text : ''
+              })),
+              source: 'التفسير الميسر - مجمع الملك فهد'
+            };
+
+            let htmlContent = `
+              <div style="background: var(--bg-secondary); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                <h3 style="color: var(--accent-gold); text-align: center; margin-bottom: 20px;">
+                  تفسير سورة ${surahName} كاملة
+                </h3>
+            `;
+
+            quranAyahs.forEach((ayah, index) => {
+              const tafsir = tafsirAyahs[index] ? tafsirAyahs[index].text : '';
+              htmlContent += `
+                <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px dashed var(--border-color);">
+                  <div style="font-size: 1.2rem; line-height: 1.8; color: var(--accent-gold); background: var(--bg-primary); padding: 10px 15px; border-radius: 8px; margin-bottom: 10px; font-family: 'Amiri', serif;">
+                    ﴿ ${ayah.text} ﴾ <span style="font-size: 0.9rem; color: var(--text-muted);">(${ayah.numberInSurah})</span>
+                  </div>
+                  <p style="line-height: 1.8; color: var(--text-muted); font-size: 1rem; text-align: justify; padding: 0 5px;">
+                    <strong style="color: var(--text-main);">التفسير:</strong> ${tafsir}
+                  </p>
+                </div>
+              `;
+            });
+
+            htmlContent += `</div>`;
+            container.innerHTML = htmlContent;
+            if(tafsirDownloadActions) tafsirDownloadActions.style.display = 'flex';
+          } else {
+            container.innerHTML = '<p style="color:#ef4444; text-align:center;">حدث خطأ أثناء جلب تفسير السورة.</p>';
+          }
+        } catch (error) {
+          container.innerHTML = '<p style="color:#ef4444; text-align:center;">حدث خطأ أثناء جلب التفسير. تأكد من الإنترنت.</p>';
+        }
+      }
+    }
+
+    const fetchTafsirBtn = document.getElementById('fetchTafsirBtn');
+    if (fetchTafsirBtn) {
+      fetchTafsirBtn.addEventListener('click', getAyahTafsir);
+    }
+
+    document.getElementById('downloadTafsirTxt').addEventListener('click', () => {
+      if (!currentTafsirDataForExport) return;
+      let textData = `--- تطبيق الماهر - قسم التفسير ---\n`;
+      textData += `المصدر: التفسير الميسر (مجمع الملك فهد)\n\n`;
+
+      if (currentTafsirDataForExport.type === 'ayah') {
+        textData += `سورة ${currentTafsirDataForExport.surah} - الآية (${currentTafsirDataForExport.ayahNum})\n`;
+        textData += `الآية: ${currentTafsirDataForExport.quranText}\n\n`;
+        textData += `التفسير: ${currentTafsirDataForExport.tafsirText}\n`;
+      } else {
+        textData += `تفسير سورة ${currentTafsirDataForExport.surah} كاملة\n\n`;
+        currentTafsirDataForExport.ayahs.forEach(a => {
+          textData += `[الآية ${a.number}]: ${a.text}\n`;
+          textData += `التفسير: ${a.tafsir}\n\n-------------------------\n`;
+        });
+      }
+
+      const blob = new Blob([textData], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `تفسير_${currentTafsirDataForExport.surah}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('downloadTafsirJson').addEventListener('click', () => {
+      if (!currentTafsirDataForExport) return;
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentTafsirDataForExport, null, 2));
+      const a = document.createElement('a');
+      a.href = dataStr;
+      a.download = `تفسير_${currentTafsirDataForExport.surah}.json`;
+      a.click();
+    });
+
+    document.getElementById('downloadTafsirPdf').addEventListener('click', () => {
+      if (!currentTafsirDataForExport) return;
+      const printWindow = window.open('', '_blank');
+      
+      let htmlContent = `
+        <html dir="rtl" lang="ar">
+        <head>
+          <meta charset="UTF-8">
+          <title>تفسير ${currentTafsirDataForExport.surah}</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;700&display=swap');
+            body { font-family: 'Cairo', sans-serif; padding: 30px; color: #111; background: #fff; }
+            h1, h2 { text-align: center; color: #b8860b; font-family: 'Amiri', serif; }
+            .ayah-box { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #ccc; page-break-inside: avoid; }
+            .quran-text { font-family: 'Amiri', serif; font-size: 1.4rem; text-align: center; background: #fdfbf7; padding: 12px; border: 1px solid #e5e5e5; border-radius: 6px; margin-bottom: 10px; }
+            .tafsir-text { font-size: 1.05rem; line-height: 1.8; text-align: justify; color: #333; }
+            .footer { text-align: center; font-size: 0.85rem; color: #666; margin-top: 40px; border-top: 1px solid #ddd; padding-top: 10px; }
+          </style>
+        </head>
+        <body>
+          <h2>تفسير القرآن الكريم - تطبيق الماهر</h2>
+          <hr style="border: 0; border-top: 2px solid #b8860b; margin-bottom: 25px;">
+      `;
+
+      if (currentTafsirDataForExport.type === 'ayah') {
+        htmlContent += `
+          <div class="ayah-box">
+            <h3>سورة ${currentTafsirDataForExport.surah} - الآية (${currentTafsirDataForExport.ayahNum})</h3>
+            <div class="quran-text">﴿ ${currentTafsirDataForExport.quranText} ﴾</div>
+            <div class="tafsir-text"><strong>التفسير الميسر:</strong> ${currentTafsirDataForExport.tafsirText}</div>
+          </div>
+        `;
+      } else {
+        htmlContent += `<h3>سورة ${currentTafsirDataForExport.surah} كاملة</h3>`;
+        currentTafsirDataForExport.ayahs.forEach(a => {
+          htmlContent += `
+            <div class="ayah-box">
+              <div class="quran-text">﴿ ${a.text} ﴾ <span style="font-size:0.9rem; color:#666;">(${a.number})</span></div>
+              <div class="tafsir-text"><strong>التفسير:</strong> ${a.tafsir}</div>
+            </div>
+          `;
+        });
+      }
+
+      htmlContent += `
+          <div class="footer">
+            المصدر: التفسير الميسر (معتمد من مجمع الملك فهد لطباعة المصحف الشريف) - تم الاستخراج عبر تطبيق الماهر
+          </div>
+        </body>
+        </html>
+      `;
+
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+      }, 500);
     });
 
   </script>
